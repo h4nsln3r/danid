@@ -16,8 +16,14 @@ import {
   useLiveCharacter,
 } from "@/components/providers/CharacterLibraryProvider";
 
-export function InventoryView({ source }: { source: Character }) {
-  const character = useLiveCharacter(source);
+export function InventoryView({
+  source,
+  canEdit,
+}: {
+  source: Character;
+  canEdit: boolean;
+}) {
+  const character = useLiveCharacter(source, canEdit);
   const { equip, stow } = useCharacterLibrary();
   const [query, setQuery] = useState("");
   const searchId = useId();
@@ -64,7 +70,7 @@ export function InventoryView({ source }: { source: Character }) {
         role="search"
         onSubmit={(event) => event.preventDefault()}
       >
-        <label htmlFor={searchId}>Search your equipment</label>
+        <label htmlFor={searchId}>Search equipment</label>
         <input
           id={searchId}
           className="field"
@@ -90,13 +96,15 @@ export function InventoryView({ source }: { source: Character }) {
                   item={item}
                   eyebrow={SLOT_LABELS[slot]}
                   action={
-                    <button
-                      type="button"
-                      className="btn"
-                      onClick={() => stow(character.id, slot)}
-                    >
-                      Stow {item.name}
-                    </button>
+                    canEdit ? (
+                      <button
+                        type="button"
+                        className="btn"
+                        onClick={() => stow(character.id, slot)}
+                      >
+                        Stow {item.name}
+                      </button>
+                    ) : null
                   }
                 />
               ))}
@@ -125,7 +133,7 @@ export function InventoryView({ source }: { source: Character }) {
                   item={item}
                   eyebrow={item.slots.length === 0 ? "Carried, not worn" : "Not worn"}
                   action={
-                    item.slots.length === 0 ? null : (
+                    !canEdit || item.slots.length === 0 ? null : (
                       <div className="button-row">
                         {item.slots.map((slot) => (
                           <button

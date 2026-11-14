@@ -1,6 +1,6 @@
 import { useId } from "react";
 
-export function RangerPortrait() {
+export function RangerPortrait({ framed = true }: { framed?: boolean }) {
   const uid = useId().replace(/:/g, "");
   const titleId = `${uid}-title`;
   const descId = `${uid}-desc`;
@@ -10,7 +10,7 @@ export function RangerPortrait() {
 
   return (
     <svg
-      viewBox="0 0 400 520"
+      viewBox={framed ? "0 0 400 520" : "145 155 110 125"}
       role="img"
       aria-labelledby={`${titleId} ${descId}`}
       className="portrait-svg"
@@ -25,9 +25,9 @@ export function RangerPortrait() {
           <path d="M58 496 V176 C58 86 342 86 342 176 V496 Z" />
         </clipPath>
         <linearGradient id={skyId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#1a3144" />
-          <stop offset="48%" stopColor="#234033" />
-          <stop offset="100%" stopColor="#140f0c" />
+          <stop offset="0%" stopColor="#1d3d4a" />
+          <stop offset="46%" stopColor="#2a5240" />
+          <stop offset="100%" stopColor="#10160f" />
         </linearGradient>
         <linearGradient id={goldId} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stopColor="#f6e4b8" />
@@ -36,10 +36,12 @@ export function RangerPortrait() {
         </linearGradient>
       </defs>
 
-      <path
-        d="M40 508 V168 C40 58 360 58 360 168 V508 Z"
-        fill={`url(#${goldId})`}
-      />
+      {framed ? (
+        <path
+          d="M40 508 V168 C40 58 360 58 360 168 V508 Z"
+          fill={`url(#${goldId})`}
+        />
+      ) : null}
       <g clipPath={`url(#${clipId})`}>
         <rect x="50" y="70" width="300" height="440" fill={`url(#${skyId})`} />
         <circle cx="286" cy="128" r="28" fill="#f3e6c4" />

@@ -110,6 +110,44 @@ This does not replace ADR-002. PostgreSQL and Prisma remain the persistence plan
 
 Consequences: Anyone at this computer can switch names. There are no passwords. Equipment edits in the folio still reset on refresh. The saved character itself does not.
 
+## ADR-009 — The company can look, the owner can change
+
+Date: 2026-11-14
+
+Status: Accepted
+
+Context: People at the same table want to see every character saved on this computer. A character still belongs to the player who created it.
+
+Options considered:
+
+1. Keep each character visible only to that player.
+2. Show every character, and let anyone change equipment.
+3. Show every character, and allow changes only for the player named on that character.
+
+Decision: Option 3. The All Characters page lists every saved character. Opening one shows the sheet and portrait. Equipment buttons, Papers, and the photographed sheet stay with the creating player. The sample character stays a shared demonstration.
+
+This does not add passwords, and it does not replace ADR-008. Anyone at the computer can still switch names.
+
+Consequences: A visitor can read another player's statistics and portrait. They cannot change that character or open its paper photos.
+
+## ADR-010 — A painted scene instead of a 3D bust
+
+Date: 2026-11-14
+
+Status: Accepted
+
+Context: A turnable bust was tried in the figure frame. It did not look like the character. A mesh rebuilt by a local or cloud model is too large for this app.
+
+Options considered:
+
+1. Keep the bust.
+2. Show only the stored portrait in the frame.
+3. Paint one scene from the portrait that is already saved, in the same dark green and gold style, and show that picture in the frame.
+
+Decision: Option 3 for a character that has a scene file. The round portrait stays the original picture. The frame shows the scene when `sceneFile` is set, and the portrait picture when it is not. Rocco Maserati's scene was painted from his existing portrait and stored on this computer. No 3D library remains.
+
+This supersedes the bust described in the earlier figure note. It does not add image generation as a button in the app.
+
 ## Future decisions
 
 Add new entries with:

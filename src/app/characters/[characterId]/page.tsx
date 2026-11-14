@@ -2,7 +2,8 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { CharacterOverview } from "@/components/character/CharacterOverview";
 import { SheetSkeleton } from "@/components/character/SheetSkeleton";
-import { loadVisibleCharacter, visiblePortraitFile } from "@/server/visible-character";
+import { getCharacter } from "@/domain/characters";
+import { loadCharacterView, visiblePortraitGallery, visibleSceneFile } from "@/server/visible-character";
 
 export default function CharacterPage({
   params,
@@ -22,15 +23,27 @@ async function CharacterPageContent({
   params: Promise<{ characterId: string }>;
 }) {
   const { characterId } = await params;
-  const character = await loadVisibleCharacter(characterId);
-  if (!character) {
+  const view = await loadCharacterView(characterId);
+  if (!view) {
     notFound();
   }
-  const portrait = await visiblePortraitFile(characterId);
+  const portraits = await visiblePortraitGallery(characterId);
+  const portraitUrls = portraits.files.map(
+    (fileName) => `/characters/${view.character.id}/picture/${fileName}`,
+  );
+  const portraitUrl = portraits.active
+    ? `/characters/${view.character.id}/picture/${portraits.active}`
+    : undefined;
+  const scene = await visibleSceneFile(characterId);
   return (
     <CharacterOverview
-      source={character}
-      portraitUrl={portrait ? `/characters/${character.id}/portrait` : undefined}
+      source={view.character}
+      portraitUrl={portraitUrl}
+      portraitUrls={portraitUrls}
+      sceneUrl={scene ? `/characters/${view.character.id}/picture/${scene}` : undefined}
+      canEdit={view.canEdit}
+      playedBy={view.playedBy}
+      rememberPlay={view.canEdit && !getCharacter(characterId)}
     />
   );
 }

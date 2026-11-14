@@ -6,11 +6,13 @@ import { equippedItem, itemsForSlot, slotOfItem } from "@/domain/rules/equipment
 export function ItemDetail({
   character,
   slot,
+  canEdit,
   onEquip,
   onStow,
 }: {
   character: Character;
   slot: EquipmentSlotId;
+  canEdit: boolean;
   onEquip: (itemId: string, slot: EquipmentSlotId) => void;
   onStow: (slot: EquipmentSlotId) => void;
 }) {
@@ -33,7 +35,7 @@ export function ItemDetail({
       ) : (
         <p>Nothing is worn here.</p>
       )}
-      {item ? (
+      {item && canEdit ? (
         <div className="button-row">
           <button type="button" className="btn" onClick={() => onStow(slot)}>
             Stow {item.name}
@@ -52,13 +54,15 @@ export function ItemDetail({
               return (
                 <li key={candidate.id}>
                   <span>{candidate.name}</span>
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    onClick={() => onEquip(candidate.id, slot)}
-                  >
-                    {action}
-                  </button>
+                  {canEdit ? (
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      onClick={() => onEquip(candidate.id, slot)}
+                    >
+                      {action}
+                    </button>
+                  ) : null}
                 </li>
               );
             })}
@@ -66,6 +70,11 @@ export function ItemDetail({
         </div>
       ) : (
         <p className="fine-print">No carried item fits this slot.</p>
+      )}
+      {canEdit ? null : (
+        <p className="fine-print">
+          Only the player who created this character can change equipment.
+        </p>
       )}
     </section>
   );

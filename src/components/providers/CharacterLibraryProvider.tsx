@@ -12,6 +12,7 @@ import {
 import { SLOT_LABELS } from "@/domain/catalog";
 import type { Character, EquipmentSlotId } from "@/domain/schema";
 import { equipItem, stowItem } from "@/domain/rules/equipment";
+import { arrowCount, withArrowCount, withHitPoints } from "@/domain/rules/play";
 
 interface Notice {
   tone: "success" | "error";
@@ -24,7 +25,10 @@ interface LibraryValue {
   equip: (characterId: string, itemId: string, slot: EquipmentSlotId) => void;
   stow: (characterId: string, slot: EquipmentSlotId) => void;
   restore: (characterId: string) => void;
-  ensure: (character: Character) => void;
+  setHitPoints: (characterId: string, hitPoints: number) => void;
+  setArrows: (characterId: string, arrows: number) => void;
+  ensure: (character: Character, editable?: boolean) => void;
+  adopt: (character: Character) => void;
   dismissNotice: () => void;
 }
 
@@ -42,8 +46,33 @@ export function CharacterLibraryProvider({
   );
   const [notice, setNotice] = useState<Notice | null>(null);
   const baselines = useRef(new Map<string, Character>());
+  const editableIds = useRef(
+    new Set(initialCharacters.map((character) => character.id)),
+  );
 
-  const ensure = useCallback((character: Character) => {
+  const refuseEdit = (characterId: string) => {
+    if (editableIds.current.has(characterId)) {
+      return false;
+    }
+    setNotice({
+      tone: "error",
+      text: "Only the player who created this character can change it.",
+    });
+    return true;
+  };
+
+  const adopt = useCallback((character: Character) => {
+    editableIds.current.add(character.id);
+    baselines.current.set(character.id, structuredClone(character));
+    setCharacters((current) =>
+      current.map((item) => (item.id === character.id ? character : item)),
+    );
+  }, []);
+
+  const ensure = useCallback((character: Character, editable = false) => {
+    if (editable) {
+      editableIds.current.add(character.id);
+    }
     if (!baselines.current.has(character.id)) {
       baselines.current.set(character.id, structuredClone(character));
     }
@@ -55,6 +84,9 @@ export function CharacterLibraryProvider({
   }, []);
 
   const equip = (characterId: string, itemId: string, slot: EquipmentSlotId) => {
+    if (refuseEdit(characterId)) {
+      return;
+    }
     const character = characters.find((entry) => entry.id === characterId);
     if (!character) {
       setNotice({
@@ -94,6 +126,9 @@ export function CharacterLibraryProvider({
   };
 
   const stow = (characterId: string, slot: EquipmentSlotId) => {
+    if (refuseEdit(characterId)) {
+      return;
+    }
     const character = characters.find((entry) => entry.id === characterId);
     if (!character) {
       setNotice({
@@ -124,6 +159,9 @@ export function CharacterLibraryProvider({
   };
 
   const restore = (characterId: string) => {
+    if (refuseEdit(characterId)) {
+      return;
+    }
     const original =
       initialCharacters.find((entry) => entry.id === characterId) ??
       baselines.current.get(characterId);
@@ -132,9 +170,18 @@ export function CharacterLibraryProvider({
       return;
     }
     setCharacters((current) =>
-      current.map((entry) =>
-        entry.id === characterId ? structuredClone(original) : entry,
-      ),
+      current.map((entry) => {
+        if (entry.id !== characterId) {
+          return entry;
+        }
+        if (characterId === "mira-thorn") {
+          return structuredClone(original);
+        }
+        return withHitPoints(
+          withArrowCount(structuredClone(original), arrowCount(entry)),
+          entry.currentHitPoints,
+        );
+      }),
     );
     setNotice({
       tone: "success",
@@ -145,6 +192,28 @@ export function CharacterLibraryProvider({
     });
   };
 
+  const setHitPoints = (characterId: string, hitPoints: number) => {
+    if (refuseEdit(characterId)) {
+      return;
+    }
+    setCharacters((current) =>
+      current.map((entry) =>
+        entry.id === characterId ? withHitPoints(entry, hitPoints) : entry,
+      ),
+    );
+  };
+
+  const setArrows = (characterId: string, arrows: number) => {
+    if (refuseEdit(characterId)) {
+      return;
+    }
+    setCharacters((current) =>
+      current.map((entry) =>
+        entry.id === characterId ? withArrowCount(entry, arrows) : entry,
+      ),
+    );
+  };
+
   return (
     <CharacterLibraryContext.Provider
       value={{
@@ -153,7 +222,10 @@ export function CharacterLibraryProvider({
         equip,
         stow,
         restore,
+        setHitPoints,
+        setArrows,
         ensure,
+        adopt,
         dismissNotice: () => setNotice(null),
       }}
     >
@@ -176,14 +248,12 @@ export function useCharacter(characterId: string): Character | undefined {
   );
 }
 
-export function useLiveCharacter(source: Character): Character {
+export function useLiveCharacter(source: Character, editable = false): Character {
   const fromLibrary = useCharacter(source.id);
   const { ensure } = useCharacterLibrary();
   useLayoutEffect(() => {
-    if (!fromLibrary) {
-      ensure(source);
-    }
-  }, [ensure, fromLibrary, source]);
+    ensure(source, editable);
+  }, [editable, ensure, source]);
   return fromLibrary ?? source;
 }
 

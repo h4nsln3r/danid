@@ -17,14 +17,20 @@ Character creation from a photographed sheet. Status: implemented and checked, e
 - Known 2014 weapons and armor get their book values. Unknown names are stored without invented damage. Class features and spells are not invented.
 - `npm test` (29), `npm run lint`, `npm run typecheck`, and `npm run build` succeeded on 2026-10-23.
 - The pages are in English and use the 2014 Player's Handbook phrases: Ability Scores, Armor Class, Hit Points, Hit Dice, Saving Throws, Skills, Spellcasting, and Equipment. A photographed sheet may still be written in Swedish. The reader keeps names as they are written and still recognizes Swedish skill and weapon names. `npm test` (29), `npm run lint`, and `npm run typecheck` succeeded again on 2026-11-14.
+- On a narrow screen the header links sit in a menu that slides in from a hamburger button and closes with the same button, the dimmed page, Escape, or a chosen link. A round face sits at the top of the portrait, and the character list uses the same kind of circle. Checked in the browser at phone width and on a wide screen. `npm run typecheck` passed after that layout change.
+- All Characters lists every character saved on this computer. Anyone can open a sheet and portrait. Equipment, Papers, and the photographed sheet can be changed only by the player who created that character.
+- The top of a character page changes current hit points and arrow count with a typed number or plus and minus. Those two numbers are saved for the player who created the character. Other players can see them.
+- The round portrait sits beside the name. Pressing it opens the pictures at full size, and Previous, Next, or the arrow keys move through every picture saved for that character. The figure frame shows the portrait. For Rocco Maserati it shows a painted forest scene made from his existing portrait. Mira Thorn still uses the ranger illustration.
+- Each saved character has a Papers page. It holds one picture for page 1 and one each for pages 2, 3, and 4. Replacing a page replaces that page's picture. Page 1 is read as the character sheet and, after confirmation, replaces the front-page numbers while keeping later pages. Pages 2–4 are read for attacks, spells, features, and notes. Nothing is added until the player confirms the lines. A known 2014 weapon keeps its book damage. An unknown attack is stored with no invented damage. Up to eight pictures of the character can be saved, and one of them is the portrait shown on the sheet. The sample character has no Papers page. `npm test` is 33 tests, and `npm run typecheck` passed on 2026-11-14.
 
 ## Explicitly not done
 
 - Password accounts, permissions, and campaign membership. Names on one computer can be switched by anyone at that computer.
 - PostgreSQL and Prisma. The JSON file does not replace that plan.
 - A successful live reading of a real sheet. Add a Gemini key before treating the reader as proven.
-- Editing hit points, spell slots, level up, or saving equipment changes. Slot changes still reset on refresh.
-- The assistant, local Ollama, and 3D viewing.
+- Spell slots, level up, and saving equipment changes. Slot changes still reset on refresh. Current hit points and arrow count are saved for the character's player.
+- The assistant and local Ollama.
+- A 3D model. A local or cloud mesh from the portrait is too large for this app. The frame shows a picture instead.
 
 ## Blockers
 
@@ -32,4 +38,4 @@ A Gemini key is in `.env.local`. Phone pictures are reduced before they are sent
 
 ## Next step
 
-Read one real character sheet with **Read the sheet**. After that reading is confirmed, move the same character records into local PostgreSQL.
+Open a saved character, add page 2, and confirm one attack. A live reading of a real sheet is still unconfirmed. After that reading is confirmed, move the same character records into local PostgreSQL.

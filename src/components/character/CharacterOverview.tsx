@@ -8,6 +8,10 @@ import { CombatPanel } from "@/components/character/CombatPanel";
 import { EquipmentBoard } from "@/components/character/EquipmentBoard";
 import { FeatureList } from "@/components/character/FeatureList";
 import { ItemDetail } from "@/components/character/ItemDetail";
+import { PlayBar } from "@/components/character/PlayBar";
+import { PortraitGallery } from "@/components/character/PortraitGallery";
+import { PortraitMark } from "@/components/character/PortraitMark";
+import { RangerPortrait } from "@/components/character/RangerPortrait";
 import { SkillList } from "@/components/character/SkillList";
 import { SpellList } from "@/components/character/SpellList";
 import {
@@ -18,11 +22,21 @@ import {
 export function CharacterOverview({
   source,
   portraitUrl,
+  portraitUrls = [],
+  sceneUrl,
+  canEdit,
+  playedBy,
+  rememberPlay,
 }: {
   source: Character;
   portraitUrl?: string;
+  portraitUrls?: string[];
+  sceneUrl?: string;
+  canEdit: boolean;
+  playedBy?: string | null;
+  rememberPlay: boolean;
 }) {
-  const character = useLiveCharacter(source);
+  const character = useLiveCharacter(source, canEdit);
   const { equip, stow, restore } = useCharacterLibrary();
   const [selected, setSelected] = useState<EquipmentSlotId>("armor");
 
@@ -37,7 +51,24 @@ export function CharacterOverview({
 
   return (
     <article className="folio">
+      <PlayBar character={character} canEdit={canEdit} rememberPlay={rememberPlay} />
       <header className="identity">
+        <div className="identity-top">
+          {portraitUrl && portraitUrls.length > 0 ? (
+            <PortraitGallery name={character.name} urls={portraitUrls} shownUrl={portraitUrl}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img className="face-badge-img" src={portraitUrl} alt="" />
+            </PortraitGallery>
+          ) : (
+            <div className="face-badge" aria-hidden="true">
+              {character.id === "mira-thorn" ? (
+                <RangerPortrait framed={false} />
+              ) : (
+                <PortraitMark name={character.name} />
+              )}
+            </div>
+          )}
+          <div>
         <p className="eyebrow">{RULESET_LABELS[character.ruleset]}</p>
         <h1>{character.name}</h1>
         <p className="identity-line">
@@ -55,21 +86,30 @@ export function CharacterOverview({
             ? ` · ${character.toolProficiencies.join(", ")}`
             : ""}
         </p>
-        <div className="button-row">
-          <button
-            type="button"
-            className="btn"
-            onClick={() => restore(character.id)}
-          >
-            {character.id === "mira-thorn" ? "Restore sample" : "Restore equipment"}
-          </button>
+        {playedBy ? (
+          <p className="identity-meta">Played by {playedBy}</p>
+        ) : null}
+        {canEdit ? (
+          <div className="button-row">
+            <button
+              type="button"
+              className="btn"
+              onClick={() => restore(character.id)}
+            >
+              {character.id === "mira-thorn" ? "Restore sample" : "Restore equipment"}
+            </button>
+          </div>
+        ) : (
+          <p className="fine-print">
+            You can look through this character. Only {playedBy ?? "their player"} can
+            change equipment or papers.
+          </p>
+        )}
+          </div>
         </div>
       </header>
 
       <div className="folio-grid">
-        <div className="area-abilities">
-          <AbilityColumn character={character} />
-        </div>
         <div className="area-stage">
           <section className="panel stage-panel" aria-label="Equipment slots">
             <p className="fine-print">
@@ -81,6 +121,7 @@ export function CharacterOverview({
               onSelect={setSelected}
               samplePortrait={character.id === "mira-thorn"}
               portraitUrl={portraitUrl}
+              sceneUrl={sceneUrl}
               caption={
                 character.id === "mira-thorn"
                   ? "Hunter of the Greenholt"
@@ -89,6 +130,9 @@ export function CharacterOverview({
             />
           </section>
         </div>
+        <div className="area-abilities">
+          <AbilityColumn character={character} />
+        </div>
         <div className="area-combat">
           <CombatPanel character={character} />
         </div>
@@ -96,6 +140,7 @@ export function CharacterOverview({
           <ItemDetail
             character={character}
             slot={selected}
+            canEdit={canEdit}
             onEquip={(itemId, slot) => equip(character.id, itemId, slot)}
             onStow={(slot) => stow(character.id, slot)}
           />

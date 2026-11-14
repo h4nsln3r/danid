@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { CharacterNav } from "@/components/layout/CharacterNav";
 import { LibraryNotice } from "@/components/providers/CharacterLibraryProvider";
 import { getCharacter, listCharacters } from "@/domain/characters";
-import { visibleSheetFile, loadVisibleCharacter } from "@/server/visible-character";
+import { ownedCharacter, visibleSheetFile, loadVisibleCharacter } from "@/server/visible-character";
 
 export async function generateStaticParams() {
   return listCharacters().map((character) => ({
@@ -63,11 +63,13 @@ async function CharacterSectionNav({
     return null;
   }
   const sheet = await visibleSheetFile(characterId);
+  const owned = Boolean(await ownedCharacter(characterId));
   return (
     <CharacterNav
       characterId={character.id}
       name={character.name}
       hasSheet={Boolean(sheet)}
+      owned={owned}
     />
   );
 }

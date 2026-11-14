@@ -76,6 +76,9 @@ export async function CompanyHome({
           <Link className="btn btn-primary" href="/characters/new">
             Create Character
           </Link>
+          <Link className="btn" href="/company">
+            All Characters
+          </Link>
           <form action={leavePlayer}>
             <button type="submit" className="btn">
               Switch player

@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { InventoryView } from "@/components/character/InventoryView";
 import { SheetSkeleton } from "@/components/character/SheetSkeleton";
-import { loadVisibleCharacter } from "@/server/visible-character";
+import { loadCharacterView } from "@/server/visible-character";
 
 export default function InventoryPage({
   params,
@@ -22,9 +22,9 @@ async function InventoryPageContent({
   params: Promise<{ characterId: string }>;
 }) {
   const { characterId } = await params;
-  const character = await loadVisibleCharacter(characterId);
-  if (!character) {
+  const view = await loadCharacterView(characterId);
+  if (!view) {
     notFound();
   }
-  return <InventoryView source={character} />;
+  return <InventoryView source={view.character} canEdit={view.canEdit} />;
 }

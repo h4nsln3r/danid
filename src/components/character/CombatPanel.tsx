@@ -72,7 +72,6 @@ export function CombatPanel({ character }: { character: Character }) {
       <div className="hp-track" aria-hidden="true">
         <span className="hp-fill" style={{ width: `${hpRatio}%` }} />
       </div>
-      <p className="fine-print">Hit Points are not edited on this page.</p>
       {pace.note ? <p className="fine-print">{pace.note}</p> : null}
 
       <h3>Saving Throws</h3>

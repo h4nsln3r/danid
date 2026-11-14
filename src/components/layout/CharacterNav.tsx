@@ -7,10 +7,12 @@ export function CharacterNav({
   characterId,
   name,
   hasSheet = false,
+  owned = false,
 }: {
   characterId: string;
   name: string;
   hasSheet?: boolean;
+  owned?: boolean;
 }) {
   const pathname = usePathname();
   const overview = `/characters/${characterId}`;
@@ -18,6 +20,7 @@ export function CharacterNav({
   const links = [
     { href: overview, label: "Character" },
     { href: pack, label: "Equipment" },
+    ...(owned ? [{ href: `${overview}/papers`, label: "Papers" }] : []),
   ];
 
   return (

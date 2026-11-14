@@ -1,3 +1,4 @@
+import { extraFromModelText, type ExtraReading } from "@/domain/extra-page";
 import { sheetImageMime, type SheetImageKind } from "@/domain/image-kind";
 import { sheetFromModelText, type SheetReading } from "@/domain/sheet";
 
@@ -40,6 +41,21 @@ skills lists the names of the checked skills.
 weapons lists one weapon name per entry.
 uncertainties is a short list, written in English and using 2014 Player's Handbook names, of fields you could not read confidently.`;
 
+const EXTRA_PROMPT = `You read one extra page of a Dungeons & Dragons 5th edition character sheet.
+It may be attacks, spells, equipment, features, or notes, printed or handwritten, in Swedish or English.
+Return only JSON with exactly these keys:
+{
+  "attacks": [{ "name": string, "detail": string | null }],
+  "spells": [{ "name": string, "level": number | null, "detail": string | null }],
+  "features": [{ "name": string, "detail": string | null }],
+  "notes": string[],
+  "uncertainties": string[]
+}
+Copy only what is visible. Do not invent damage, spell text, class features, or numbers.
+attacks lists one attack or weapon name per entry. detail is only the text written beside it.
+spells lists one spell per entry. level is null when the spell level is not visible.
+uncertainties is a short English list of things you could not read, and why.`;
+
 const PRIMARY_MODEL = "gemini-3.8-flash";
 const FALLBACK_MODEL = "gemini-3.5-flash-lite";
 
@@ -54,6 +70,21 @@ export async function readCharacterSheet(
   bytes: Uint8Array,
   kind: SheetImageKind,
 ): Promise<SheetReading> {
+  return sheetFromModelText(await askGemini(bytes, kind, PROMPT));
+}
+
+export async function readExtraPage(
+  bytes: Uint8Array,
+  kind: SheetImageKind,
+): Promise<ExtraReading> {
+  return extraFromModelText(await askGemini(bytes, kind, EXTRA_PROMPT));
+}
+
+async function askGemini(
+  bytes: Uint8Array,
+  kind: SheetImageKind,
+  prompt: string,
+): Promise<string> {
   const key = process.env.GEMINI_API_KEY;
   if (!key) {
     throw new SheetReaderError(
@@ -68,7 +99,7 @@ export async function readCharacterSheet(
     for (let attempt = 0; attempt < 2; attempt += 1) {
       let response: Response;
       try {
-        response = await requestReading(key, model, bytes, kind);
+        response = await requestReading(key, model, bytes, kind, prompt);
       } catch (error) {
         if (!(error instanceof AttemptFailed)) {
           throw error;
@@ -77,7 +108,7 @@ export async function readCharacterSheet(
         break;
       }
       if (response.ok) {
-        return readingFromResponse(response);
+        return textFromResponse(response);
       }
       if (response.status !== 503 && response.status !== 429) {
         throw new SheetReaderError(rejectionMessage(response.status, await errorMessage(response)));
@@ -93,7 +124,7 @@ export async function readCharacterSheet(
   }
 
   throw new SheetReaderError(
-    "Gemini did not finish reading the picture. It is saved. Press Read the sheet again in a moment, or fill in the sheet yourself.",
+    "Gemini did not finish reading the picture. It is saved. Try that page again in a moment.",
   );
 }
 
@@ -109,6 +140,7 @@ async function requestReading(
   model: string,
   bytes: Uint8Array,
   kind: SheetImageKind,
+  prompt: string,
 ): Promise<Response> {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
   try {
@@ -123,7 +155,7 @@ async function requestReading(
           {
             role: "user",
             parts: [
-              { text: PROMPT },
+              { text: prompt },
               {
                 inlineData: {
                   mimeType: sheetImageMime(kind),
@@ -145,17 +177,17 @@ async function requestReading(
   }
 }
 
-async function readingFromResponse(response: Response): Promise<SheetReading> {
+async function textFromResponse(response: Response): Promise<string> {
   const body = (await response.json()) as {
     candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
   };
   const text = body.candidates?.[0]?.content?.parts?.map((part) => part.text ?? "").join("") ?? "";
   if (!text) {
     throw new SheetReaderError(
-      "Gemini sent no reading. Fill in the character sheet yourself while the picture stays here.",
+      "Gemini sent no reading. The picture is saved. You can try that page again.",
     );
   }
-  return sheetFromModelText(text);
+  return text;
 }
 
 async function errorMessage(response: Response): Promise<string> {
