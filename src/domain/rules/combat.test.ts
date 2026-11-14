@@ -104,7 +104,7 @@ describe("shields and armor categories", () => {
     const ac = armorClass(sheet);
     expect(ac.total).toBe(14);
     expect(ac.warnings).toContain(
-      "This armor imposes disadvantage on Stealth checks.",
+      "You have disadvantage on Dexterity (Stealth) checks.",
     );
   });
 
@@ -129,9 +129,9 @@ describe("shields and armor categories", () => {
     expect(armorClass(sheet).total).toBe(16);
     expect(speed(sheet)).toEqual({
       feet: 25,
-      note: "Strength is below 13, so this heavy armor reduces speed by 10 feet.",
+      note: "Your Strength is below 13, so this armor reduces your speed by 10 feet.",
     });
-    expect(armorClass(sheet).warnings[0]).toMatch(/Not proficient with heavy armor/);
+    expect(armorClass(sheet).warnings[0]).toMatch(/lack proficiency with heavy armor/);
   });
 });
 

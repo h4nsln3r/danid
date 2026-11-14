@@ -8,7 +8,7 @@ export function SpellList({ character }: { character: Character }) {
   if (!casting) {
     return (
       <section className="panel" aria-labelledby="spells-heading">
-        <h2 id="spells-heading">Spells</h2>
+        <h2 id="spells-heading">Spellcasting</h2>
         <p>This character has no spellcasting.</p>
       </section>
     );
@@ -19,22 +19,22 @@ export function SpellList({ character }: { character: Character }) {
 
   return (
     <section className="panel" aria-labelledby="spells-heading">
-      <h2 id="spells-heading">Spells</h2>
+      <h2 id="spells-heading">Spellcasting</h2>
       <p className="fine-print">
         Ranger spells from the 2014 Player&apos;s Handbook. The lines below are
         short reminders, and the slots are shown full.
       </p>
       <dl className="stat-grid">
         <div>
-          <dt>Ability</dt>
+          <dt>Spellcasting Ability</dt>
           <dd>{ABILITY_LABELS[casting.ability]}</dd>
         </div>
         <div>
-          <dt>Save DC</dt>
+          <dt>Spell Save DC</dt>
           <dd>{saveDc}</dd>
         </div>
         <div>
-          <dt>Spell attack</dt>
+          <dt>Spell Attack Modifier</dt>
           <dd>{attack === null ? "—" : formatModifier(attack)}</dd>
         </div>
       </dl>
@@ -42,7 +42,8 @@ export function SpellList({ character }: { character: Character }) {
         {casting.slots.map((slot) => (
           <li key={slot.level}>
             <span>
-              Level {slot.level}, {slot.total} {slot.total === 1 ? "slot" : "slots"}
+              {spellLevelName(slot.level)}, {slot.total}{" "}
+              {slot.total === 1 ? "slot" : "slots"}
             </span>
             <span className="pip-row" aria-hidden="true">
               {Array.from({ length: slot.total }, (_, index) => (
@@ -57,7 +58,7 @@ export function SpellList({ character }: { character: Character }) {
           <li key={spell.name}>
             <h3>
               {spell.name}
-              <span className="feature-source">Level {spell.level}</span>
+              <span className="feature-source">{spellLevelName(spell.level)}</span>
             </h3>
             <p>{spell.summary}</p>
           </li>
@@ -65,4 +66,12 @@ export function SpellList({ character }: { character: Character }) {
       </ul>
     </section>
   );
+}
+
+function spellLevelName(level: number): string {
+  if (level === 0) {
+    return "Cantrip";
+  }
+  const suffix = level === 1 ? "st" : level === 2 ? "nd" : level === 3 ? "rd" : "th";
+  return `${level}${suffix}-level`;
 }

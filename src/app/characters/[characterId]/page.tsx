@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { CharacterOverview } from "@/components/character/CharacterOverview";
 import { SheetSkeleton } from "@/components/character/SheetSkeleton";
-import { loadVisibleCharacter } from "@/server/visible-character";
+import { loadVisibleCharacter, visiblePortraitFile } from "@/server/visible-character";
 
 export default function CharacterPage({
   params,
@@ -26,5 +26,11 @@ async function CharacterPageContent({
   if (!character) {
     notFound();
   }
-  return <CharacterOverview source={character} />;
+  const portrait = await visiblePortraitFile(characterId);
+  return (
+    <CharacterOverview
+      source={character}
+      portraitUrl={portrait ? `/characters/${character.id}/portrait` : undefined}
+    />
+  );
 }

@@ -5,9 +5,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const LINKS = [
-  { href: "/", label: "Sällskap" },
-  { href: "/characters/new", label: "Ny karaktär" },
-  { href: "/campaigns", label: "Kampanjer" },
+  { href: "/", label: "Characters" },
+  { href: "/characters/new", label: "New Character" },
+  { href: "/campaigns", label: "Campaigns" },
 ];
 
 export function AppHeader() {
@@ -19,10 +19,10 @@ export function AppHeader() {
         </span>
         <span>
           <span className="brand-name">Companion</span>
-          <span className="brand-sub">Femte utgåvan</span>
+          <span className="brand-sub">Fifth Edition</span>
         </span>
       </Link>
-      <Suspense fallback={<span className="nav-fallback">Meny</span>}>
+      <Suspense fallback={<span className="nav-fallback">Menu</span>}>
         <AppNav />
       </Suspense>
     </header>

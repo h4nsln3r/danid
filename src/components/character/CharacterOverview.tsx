@@ -15,7 +15,13 @@ import {
   useLiveCharacter,
 } from "@/components/providers/CharacterLibraryProvider";
 
-export function CharacterOverview({ source }: { source: Character }) {
+export function CharacterOverview({
+  source,
+  portraitUrl,
+}: {
+  source: Character;
+  portraitUrl?: string;
+}) {
   const character = useLiveCharacter(source);
   const { equip, stow, restore } = useCharacterLibrary();
   const [selected, setSelected] = useState<EquipmentSlotId>("armor");
@@ -23,8 +29,8 @@ export function CharacterOverview({ source }: { source: Character }) {
   if (!character) {
     return (
       <section className="error-state" role="alert">
-        <h1>This folio is missing</h1>
-        <p>The sample library has no character with that id.</p>
+        <h1>This character is missing</h1>
+        <p>There is no character with that id.</p>
       </section>
     );
   }
@@ -55,7 +61,7 @@ export function CharacterOverview({ source }: { source: Character }) {
             className="btn"
             onClick={() => restore(character.id)}
           >
-            {character.id === "mira-thorn" ? "Restore sample" : "Återställ utrustning"}
+            {character.id === "mira-thorn" ? "Restore sample" : "Restore equipment"}
           </button>
         </div>
       </header>
@@ -74,6 +80,7 @@ export function CharacterOverview({ source }: { source: Character }) {
               selected={selected}
               onSelect={setSelected}
               samplePortrait={character.id === "mira-thorn"}
+              portraitUrl={portraitUrl}
               caption={
                 character.id === "mira-thorn"
                   ? "Hunter of the Greenholt"

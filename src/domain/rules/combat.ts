@@ -69,7 +69,7 @@ export function armorClass(character: Character): ArmorClassResult {
       warnings.push(untrainedArmorWarning(`${profile.category} armor`));
     }
     if (profile.stealthDisadvantage) {
-      warnings.push("This armor imposes disadvantage on Stealth checks.");
+      warnings.push("You have disadvantage on Dexterity (Stealth) checks.");
     }
   }
 
@@ -99,7 +99,7 @@ export function speed(character: Character): SpeedResult {
   ) {
     return {
       feet: character.speed - 10,
-      note: `Strength is below ${requirement}, so this heavy armor reduces speed by 10 feet.`,
+      note: `Your Strength is below ${requirement}, so this armor reduces your speed by 10 feet.`,
     };
   }
   return { feet: character.speed };
@@ -253,5 +253,5 @@ function duelingApplies(
 }
 
 function untrainedArmorWarning(label: string): string {
-  return `Not proficient with ${label}. Strength and Dexterity checks, saves, and attacks have disadvantage, and spells cannot be cast.`;
+  return `You lack proficiency with ${label}. You have disadvantage on any ability check, saving throw, or attack roll that involves Strength or Dexterity, and you can't cast spells.`;
 }

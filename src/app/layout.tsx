@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     default: "Companion",
     template: "%s · Companion",
   },
-  description: "Ett lokalt sällskap för D&D, femte utgåvan.",
+  description: "A local companion for fifth edition D&D.",
 };
 
 export default function RootLayout({
@@ -35,21 +35,21 @@ export default function RootLayout({
 }) {
   return (
     <html
-      lang="sv"
+      lang="en"
       className={`${display.variable} ${body.variable} h-full`}
     >
       <body className="min-h-full">
         <a className="skip-link" href="#content">
-          Hoppa till innehållet
+          Skip to content
         </a>
         <CharacterLibraryProvider initialCharacters={listCharacters()}>
           <AppHeader />
           <div id="content">{children}</div>
           <footer className="site-footer">
             <p>
-              Karaktärer du skapar sparas på den här datorn. Utrustning du byter
-              i foliet återställs när sidan laddas om. Bilden av ett pappersblad
-              skickas till Google Gemini bara när du ber appen läsa det.
+              Characters you create are saved on this computer. Equipment you
+              change is restored when the page reloads. A picture of a character
+              sheet is sent to Google Gemini only when you ask the app to read it.
             </p>
           </footer>
         </CharacterLibraryProvider>

@@ -6,7 +6,7 @@ import { currentPlayer } from "@/server/players";
 export default function NewCharacterPage() {
   return (
     <main className="page">
-      <Suspense fallback={<p className="loading-line">Öppnar formuläret…</p>}>
+      <Suspense fallback={<p className="loading-line">Opening the form…</p>}>
         <NewCharacterGate />
       </Suspense>
     </main>

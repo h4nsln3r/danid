@@ -27,19 +27,29 @@ export function EquipmentBoard({
   selected,
   onSelect,
   samplePortrait,
+  portraitUrl,
   caption,
 }: {
   character: Character;
   selected: EquipmentSlotId;
   onSelect: (slot: EquipmentSlotId) => void;
   samplePortrait: boolean;
+  portraitUrl?: string;
   caption: string;
 }) {
   return (
     <div className="equipment-stage">
       <div className="portrait-column">
         <figure className="portrait-frame">
-          {samplePortrait ? <RangerPortrait /> : <PortraitMark name={character.name} />}
+          {portraitUrl ? (
+            // The portrait is a file stored for this character on this computer.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img className="portrait-photo" src={portraitUrl} alt={`Portrait of ${character.name}`} />
+          ) : samplePortrait ? (
+            <RangerPortrait />
+          ) : (
+            <PortraitMark name={character.name} />
+          )}
           <figcaption>{caption}</figcaption>
         </figure>
         <EquipmentSlotButton

@@ -110,7 +110,7 @@ export function sheetFromModelText(text: string): SheetReading {
   } catch {
     return {
       values: blankSheet(),
-      notes: ["Läsningen svarade inte med giltig JSON. Fyll i bladet själv."],
+      notes: ["The reading did not return valid JSON. Fill in the character sheet yourself."],
     };
   }
 }
@@ -120,7 +120,7 @@ export function sheetFromModel(input: unknown): SheetReading {
   if (!parsed.success) {
     return {
       values: blankSheet(),
-      notes: ["Läsningen saknade de fält som behövs. Fyll i bladet själv."],
+      notes: ["The reading was missing the fields this form needs. Fill in the character sheet yourself."],
     };
   }
 
@@ -160,7 +160,7 @@ export function sheetFromModel(input: unknown): SheetReading {
   for (const skill of model.skills ?? []) {
     const id = skillId(skill);
     if (!id) {
-      notes.push(`Färdigheten "${skill}" matchade ingen färdighet i Player's Handbook 2014.`);
+      notes.push(`The skill "${skill}" does not match a skill in the 2014 Player's Handbook.`);
       continue;
     }
     if (!skills.includes(id)) {
@@ -174,25 +174,25 @@ export function sheetFromModel(input: unknown): SheetReading {
     values.hitDie = String(classProfile.hitDie);
     if (model.hitDie != null && model.hitDie !== classProfile.hitDie) {
       notes.push(
-        `Bladet verkade ange tärning d${model.hitDie}. Klassen använder d${classProfile.hitDie}, och det värdet är ifyllt.`,
+        `The sheet seemed to show a d${model.hitDie} Hit Die. This class uses a d${classProfile.hitDie}, and that value is filled in.`,
       );
     }
   } else if (model.hitDie != null && DIE_SIZES.includes(model.hitDie as (typeof DIE_SIZES)[number])) {
     values.hitDie = String(model.hitDie);
   }
 
-  noteIfEmpty(notes, values.name, "Namnet");
-  noteIfEmpty(notes, values.ancestry, "Folkslaget");
-  noteIfEmpty(notes, values.className, "Klassen");
-  noteIfEmpty(notes, values.level, "Nivån");
-  noteIfEmpty(notes, values.strength, "Styrka");
-  noteIfEmpty(notes, values.dexterity, "Rörlighet");
-  noteIfEmpty(notes, values.constitution, "Fysik");
-  noteIfEmpty(notes, values.intelligence, "Intelligens");
-  noteIfEmpty(notes, values.wisdom, "Visdom");
-  noteIfEmpty(notes, values.charisma, "Karisma");
-  noteIfEmpty(notes, values.maxHitPoints, "Maximala träffpoäng");
-  noteIfEmpty(notes, values.speed, "Förflyttning");
+  noteIfEmpty(notes, values.name, "Character Name");
+  noteIfEmpty(notes, values.ancestry, "Race");
+  noteIfEmpty(notes, values.className, "Class");
+  noteIfEmpty(notes, values.level, "Level");
+  noteIfEmpty(notes, values.strength, "Strength");
+  noteIfEmpty(notes, values.dexterity, "Dexterity");
+  noteIfEmpty(notes, values.constitution, "Constitution");
+  noteIfEmpty(notes, values.intelligence, "Intelligence");
+  noteIfEmpty(notes, values.wisdom, "Wisdom");
+  noteIfEmpty(notes, values.charisma, "Charisma");
+  noteIfEmpty(notes, values.maxHitPoints, "Hit Point Maximum");
+  noteIfEmpty(notes, values.speed, "Speed");
 
   return { values, notes };
 }
@@ -248,14 +248,14 @@ const modelSchema = z.object({
 
 const sheetFormSchema = z
   .object({
-    draftId: z.string().regex(/^d-[a-f0-9]{8}$/, "Bilden saknar ett giltigt utkast."),
-    name: z.string().trim().min(1, "Skriv namnet.").max(80),
-    ancestry: z.string().trim().min(1, "Skriv folkslaget.").max(80),
-    className: z.string().trim().min(1, "Skriv klassen.").max(80),
+    draftId: z.string().regex(/^d-[a-f0-9]{8}$/, "The image has no valid draft."),
+    name: z.string().trim().min(1, "Enter the character name.").max(80),
+    ancestry: z.string().trim().min(1, "Enter the race.").max(80),
+    className: z.string().trim().min(1, "Enter the class.").max(80),
     subclass: z.string().trim().max(80),
-    level: z.coerce.number().int().min(1, "Nivån ska vara 1–20.").max(20),
-    background: z.string().trim().min(1, "Skriv bakgrunden.").max(80),
-    alignment: z.string().trim().min(1, "Skriv läggningen.").max(80),
+    level: z.coerce.number().int().min(1, "Level must be 1–20.").max(20),
+    background: z.string().trim().min(1, "Enter the background.").max(80),
+    alignment: z.string().trim().min(1, "Enter the alignment.").max(80),
     experiencePoints: z.coerce.number().int().min(0).max(999999),
     strength: z.coerce.number().int().min(1).max(30),
     dexterity: z.coerce.number().int().min(1).max(30),
@@ -263,17 +263,17 @@ const sheetFormSchema = z
     intelligence: z.coerce.number().int().min(1).max(30),
     wisdom: z.coerce.number().int().min(1).max(30),
     charisma: z.coerce.number().int().min(1).max(30),
-    maxHitPoints: z.coerce.number().int().min(1, "Skriv maximala träffpoäng.").max(400),
+    maxHitPoints: z.coerce.number().int().min(1, "Enter the hit point maximum.").max(400),
     currentHitPoints: z.coerce.number().int().min(0).max(400),
-    speed: z.coerce.number().int().min(5, "Skriv förflyttning i fot.").max(120),
+    speed: z.coerce.number().int().min(5, "Enter Speed in feet.").max(120),
     hitDie: z.coerce
       .number()
       .int()
       .refine((die) => DIE_SIZES.includes(die as (typeof DIE_SIZES)[number]), {
-        message: "Träffpoängstärningen måste vara 4, 6, 8, 10 eller 12.",
+        message: "The Hit Die must be 4, 6, 8, 10, or 12.",
       }),
     skills: z.array(skillSchema),
-    languages: z.string().trim().min(1, "Skriv minst ett språk."),
+    languages: z.string().trim().min(1, "Enter at least one language."),
     armorName: z.string().trim().max(80),
     shield: z.boolean(),
     weapons: z.string().max(1000),
@@ -284,7 +284,7 @@ const sheetFormSchema = z
       ctx.addIssue({
         code: "custom",
         path: ["currentHitPoints"],
-        message: "Nuvarande träffpoäng kan inte vara högre än max.",
+        message: "Current Hit Points cannot be higher than the maximum.",
       });
     }
   });
@@ -326,7 +326,7 @@ export function parseSheetForm(
     sheetArmorClass: stringField(formData, "sheetArmorClass"),
   });
   if (!parsed.success) {
-    return { ok: false, message: parsed.error.issues[0]?.message ?? "Formuläret är ofullständigt." };
+    return { ok: false, message: parsed.error.issues[0]?.message ?? "The form is incomplete." };
   }
   return { ok: true, value: parsed.data };
 }
@@ -362,7 +362,7 @@ function numberText(value: number | null | undefined): string {
 
 function noteIfEmpty(notes: string[], value: string, label: string) {
   if (!value) {
-    notes.push(`${label} kunde inte läsas. Fyll i det innan du skapar karaktären.`);
+    notes.push(`${label} could not be read. Fill it in before you create the character.`);
   }
 }
 

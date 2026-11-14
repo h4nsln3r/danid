@@ -27,7 +27,7 @@ export function CombatPanel({ character }: { character: Character }) {
       <div className="ac-row">
         <p className="ac-medal">
           <span className="ac-value">{ac.total}</span>
-          <span className="ac-label">Armor class</span>
+          <span className="ac-label">Armor Class</span>
         </p>
         <p className="ac-parts">{ac.parts.join(" + ")}</p>
       </div>
@@ -41,13 +41,13 @@ export function CombatPanel({ character }: { character: Character }) {
 
       <dl className="stat-grid">
         <div>
-          <dt>Hit points</dt>
+          <dt>Hit Points</dt>
           <dd>
             {character.currentHitPoints} / {character.maxHitPoints}
           </dd>
         </div>
         <div>
-          <dt>Hit dice</dt>
+          <dt>Hit Dice</dt>
           <dd>
             {character.level}d{character.hitDie}
           </dd>
@@ -61,21 +61,21 @@ export function CombatPanel({ character }: { character: Character }) {
           <dd>{pace.feet} ft.</dd>
         </div>
         <div>
-          <dt>Proficiency</dt>
+          <dt>Proficiency Bonus</dt>
           <dd>{formatModifier(proficiencyBonus(character.level))}</dd>
         </div>
         <div>
-          <dt>Passive Perception</dt>
+          <dt>Passive Wisdom (Perception)</dt>
           <dd>{passiveScore(character, "perception")}</dd>
         </div>
       </dl>
       <div className="hp-track" aria-hidden="true">
         <span className="hp-fill" style={{ width: `${hpRatio}%` }} />
       </div>
-      <p className="fine-print">Hit points stay at the sample value in this prototype.</p>
+      <p className="fine-print">Hit Points are not edited on this page.</p>
       {pace.note ? <p className="fine-print">{pace.note}</p> : null}
 
-      <h3>Saving throws</h3>
+      <h3>Saving Throws</h3>
       <ul className="save-list">
         {abilityLabelOrder().map((ability) => {
           const trained = character.savingThrowProficiencies.includes(ability);
@@ -98,7 +98,7 @@ export function CombatPanel({ character }: { character: Character }) {
 
       <h3>Attacks</h3>
       {attacks.length === 0 ? (
-        <p className="fine-print">No weapon is in hand or on the bow slot.</p>
+        <p className="fine-print">No weapon is wielded.</p>
       ) : (
         <ul className="attack-list">
           {attacks.map((attack) => (

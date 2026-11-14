@@ -80,7 +80,7 @@ function ItemBody({
 }) {
   const item = character.items.find((entry) => entry.id === itemId);
   if (!item) {
-    return <p>That item is missing from the folio.</p>;
+    return <p>That item is missing from this character.</p>;
   }
   const weight = itemWeightLb(item);
 

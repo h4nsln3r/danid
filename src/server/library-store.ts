@@ -9,16 +9,20 @@ const playerSchema = z.object({
   name: z.string().min(1).max(40),
 });
 
+const imageName = z.string().regex(/^[a-z0-9-]+\.(jpg|png|webp)$/);
+
 const storedCharacterSchema = z.object({
   ownerId: playerSchema.shape.id,
-  sheetFile: z.string().regex(/^[a-z0-9-]+\.(jpg|png|webp)$/).nullable(),
+  sheetFile: imageName.nullable(),
+  portraitFile: imageName.nullable().optional(),
   character: characterSchema,
 });
 
 const draftSchema = z.object({
   id: z.string().regex(/^d-[a-f0-9]{8}$/),
   ownerId: playerSchema.shape.id,
-  sheetFile: z.string().regex(/^[a-z0-9-]+\.(jpg|png|webp)$/),
+  sheetFile: imageName.nullable(),
+  portraitFile: imageName.nullable().optional(),
 });
 
 const librarySchema = z.object({
@@ -117,6 +121,7 @@ export async function saveCharacter(
   ownerId: string,
   character: Character,
   sheetFile: string | null,
+  portraitFile: string | null = null,
 ): Promise<void> {
   await withLibrary(async () => {
     const library = await readLibrary();
@@ -126,7 +131,7 @@ export async function saveCharacter(
     if (existing >= 0 && library.characters[existing]?.ownerId !== ownerId) {
       throw new Error("Character id belongs to another player.");
     }
-    const record = { ownerId, sheetFile, character };
+    const record = { ownerId, sheetFile, portraitFile, character };
     if (existing >= 0) {
       library.characters[existing] = record;
     } else {
@@ -149,6 +154,29 @@ export function sheetFilePath(fileName: string): string {
     throw new Error("Unsafe sheet file name.");
   }
   return path.join(sheetDir, fileName);
+}
+
+export async function updateDraft(
+  ownerId: string,
+  draftId: string,
+  patch: Partial<Pick<SheetDraft, "sheetFile" | "portraitFile">>,
+): Promise<void> {
+  await withLibrary(async () => {
+    const library = await readLibrary();
+    const draft = library.drafts.find(
+      (entry) => entry.id === draftId && entry.ownerId === ownerId,
+    );
+    if (!draft) {
+      throw new Error("Draft is missing.");
+    }
+    if (patch.sheetFile !== undefined) {
+      draft.sheetFile = patch.sheetFile;
+    }
+    if (patch.portraitFile !== undefined) {
+      draft.portraitFile = patch.portraitFile;
+    }
+    await writeLibrary(library);
+  });
 }
 
 export async function addDraft(draft: SheetDraft): Promise<void> {

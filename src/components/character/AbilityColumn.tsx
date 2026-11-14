@@ -6,7 +6,7 @@ import { abilityLabelOrder, abilityModifier } from "@/domain/rules/abilities";
 export function AbilityColumn({ character }: { character: Character }) {
   return (
     <section className="panel" aria-labelledby="abilities-heading">
-      <h2 id="abilities-heading">Abilities</h2>
+      <h2 id="abilities-heading">Ability Scores</h2>
       <ul className="ability-list">
         {abilityLabelOrder().map((ability) => {
           const score = character.abilityScores[ability];

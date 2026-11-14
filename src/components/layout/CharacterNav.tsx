@@ -16,8 +16,8 @@ export function CharacterNav({
   const overview = `/characters/${characterId}`;
   const pack = `${overview}/inventory`;
   const links = [
-    { href: overview, label: "Översikt" },
-    { href: pack, label: "Packning" },
+    { href: overview, label: "Character" },
+    { href: pack, label: "Equipment" },
   ];
 
   return (
@@ -39,7 +39,7 @@ export function CharacterNav({
           {hasSheet ? (
             <li>
               <a className="nav-link" href={`/characters/${characterId}/sheet`} target="_blank" rel="noreferrer">
-                Pappersblad
+                Character Sheet
               </a>
             </li>
           ) : null}

@@ -18,30 +18,30 @@ export async function CompanyHome({
     return (
       <>
         <header className="identity">
-          <p className="eyebrow">Lokalt bord</p>
-          <h1>Vem spelar?</h1>
+          <p className="eyebrow">This computer</p>
+          <h1>Who is playing?</h1>
           <p className="lede">
-            Skriv ditt namn. Det är ingen inloggning, bara ett namn på den här
-            datorn, så att var och en kan ha sina egna karaktärer.
+            Enter your name. This is not a login, only a name on this computer,
+            so each person can keep their own characters.
           </p>
         </header>
         {nameError ? (
           <p className="notice notice-error" role="alert">
-            Namnet behöver vara 1–40 tecken.
+            The name needs to be 1–40 characters.
           </p>
         ) : null}
         <form className="panel name-form" action={createPlayer}>
           <label className="field">
-            <span>Ditt namn</span>
+            <span>Your name</span>
             <input name="name" required maxLength={40} autoComplete="nickname" />
           </label>
           <button type="submit" className="btn btn-primary">
-            Fortsätt
+            Continue
           </button>
         </form>
         {players.length > 0 ? (
           <section className="panel">
-            <h2>Redan här</h2>
+            <h2>Already here</h2>
             <ul className="player-list">
               {players.map((entry) => (
                 <li key={entry.id}>
@@ -67,26 +67,26 @@ export async function CompanyHome({
     <>
       <header className="identity">
         <p className="eyebrow">{player.name}</p>
-        <h1>Dina karaktärer</h1>
+        <h1>Your characters</h1>
         <p className="lede">
-          Skapa en karaktär från ett pappersblad. Du kan ha flera. Utrustning
-          du byter i foliet ligger kvar tills sidan laddas om.
+          Create a character from a character sheet. You can have more than
+          one. Equipment you change stays until the page reloads.
         </p>
         <div className="button-row">
           <Link className="btn btn-primary" href="/characters/new">
-            Skapa karaktär
+            Create Character
           </Link>
           <form action={leavePlayer}>
             <button type="submit" className="btn">
-              Byt spelare
+              Switch player
             </button>
           </form>
         </div>
       </header>
       {owned.length === 0 ? (
         <section className="panel empty-state">
-          <h2>Inga karaktärer ännu</h2>
-          <p>Ta ett kort på ditt blad, eller ladda upp en bild.</p>
+          <h2>No characters yet</h2>
+          <p>Add a character sheet or a portrait to begin.</p>
         </section>
       ) : (
         <ul className="roster">
@@ -94,16 +94,25 @@ export async function CompanyHome({
             <li key={entry.character.id}>
               <Link href={`/characters/${entry.character.id}`} className="roster-card">
                 <span className="roster-portrait">
-                  <PortraitMark name={entry.character.name} />
+                  {entry.portraitFile ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      className="portrait-photo"
+                      src={`/characters/${entry.character.id}/portrait`}
+                      alt={`Portrait of ${entry.character.name}`}
+                    />
+                  ) : (
+                    <PortraitMark name={entry.character.name} />
+                  )}
                 </span>
                 <span className="roster-copy">
-                  <span className="eyebrow">Nivå {entry.character.level}</span>
+                  <span className="eyebrow">Level {entry.character.level}</span>
                   <span className="roster-name">{entry.character.name}</span>
                   <span>
                     {entry.character.ancestry} {entry.character.className}
                     {entry.character.subclass ? ` · ${entry.character.subclass}` : ""}
                   </span>
-                  <span className="btn btn-primary">Öppna folio</span>
+                  <span className="btn btn-primary">Open character</span>
                 </span>
               </Link>
             </li>
@@ -111,7 +120,7 @@ export async function CompanyHome({
         </ul>
       )}
       <section className="panel">
-        <h2>Exempel</h2>
+        <h2>Sample</h2>
         <ul className="roster">
           {sample.map((character) => (
             <li key={character.id}>
@@ -120,12 +129,12 @@ export async function CompanyHome({
                   <RangerPortrait />
                 </span>
                 <span className="roster-copy">
-                  <span className="eyebrow">Nivå {character.level}</span>
+                  <span className="eyebrow">Level {character.level}</span>
                   <span className="roster-name">{character.name}</span>
                   <span>
                     {character.ancestry} {character.className}
                   </span>
-                  <span className="btn">Öppna exempel</span>
+                  <span className="btn">Open sample</span>
                 </span>
               </Link>
             </li>

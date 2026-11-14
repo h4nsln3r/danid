@@ -25,8 +25,8 @@ export function InventoryView({ source }: { source: Character }) {
   if (!character) {
     return (
       <section className="error-state" role="alert">
-        <h1>This pack is missing</h1>
-        <p>The sample library has no character with that id.</p>
+        <h1>This equipment is missing</h1>
+        <p>There is no character with that id.</p>
       </section>
     );
   }
@@ -52,9 +52,9 @@ export function InventoryView({ source }: { source: Character }) {
     <article className="folio">
       <header className="identity">
         <p className="eyebrow">{character.name}</p>
-        <h1>Pack</h1>
+        <h1>Equipment</h1>
         <p className="identity-meta">
-          {formatWeight(totalWeightLb(character))} carried. Capacity{" "}
+          {formatWeight(totalWeightLb(character))} carried. Carrying Capacity{" "}
           {formatWeight(carryingCapacity(character))}.
         </p>
       </header>
@@ -64,7 +64,7 @@ export function InventoryView({ source }: { source: Character }) {
         role="search"
         onSubmit={(event) => event.preventDefault()}
       >
-        <label htmlFor={searchId}>Search worn gear and the pack</label>
+        <label htmlFor={searchId}>Search your equipment</label>
         <input
           id={searchId}
           className="field"
@@ -109,12 +109,12 @@ export function InventoryView({ source }: { source: Character }) {
           {pack.length === 0 ? (
             <div className="empty-state">
               <p className="empty-title">
-                {needle ? "Nothing in the pack matches" : "The pack is empty"}
+                {needle ? "Nothing carried matches" : "Nothing is carried"}
               </p>
               <p>
                 {needle
                   ? "Try a shorter search, or clear the field to see every carried item."
-                  : "Every item is worn, or the pack has not been filled in."}
+                  : "Every item is worn, or no equipment has been filled in."}
               </p>
             </div>
           ) : (
@@ -123,7 +123,7 @@ export function InventoryView({ source }: { source: Character }) {
                 <GearRow
                   key={item.id}
                   item={item}
-                  eyebrow={item.slots.length === 0 ? "Carried, not worn" : "Pack"}
+                  eyebrow={item.slots.length === 0 ? "Carried, not worn" : "Not worn"}
                   action={
                     item.slots.length === 0 ? null : (
                       <div className="button-row">

@@ -59,7 +59,7 @@ export function CharacterLibraryProvider({
     if (!character) {
       setNotice({
         tone: "error",
-        text: "Den karaktären finns inte i biblioteket.",
+        text: "That character is not in the library.",
       });
       return;
     }
@@ -88,7 +88,7 @@ export function CharacterLibraryProvider({
       ? `${name} is already worn in the ${slotLabel} slot.`
       : `${name} is now in the ${slotLabel} slot.`;
     if (displaced) {
-      text += ` ${displaced.name} went back to the pack.`;
+      text += ` ${displaced.name} went back into your equipment.`;
     }
     setNotice({ tone: "success", text });
   };
@@ -98,7 +98,7 @@ export function CharacterLibraryProvider({
     if (!character) {
       setNotice({
         tone: "error",
-        text: "Den karaktären finns inte i biblioteket.",
+        text: "That character is not in the library.",
       });
       return;
     }
@@ -119,7 +119,7 @@ export function CharacterLibraryProvider({
     );
     setNotice({
       tone: "success",
-      text: `${item?.name ?? "The item"} is back in the pack.`,
+      text: `${item?.name ?? "The item"} is back in your equipment.`,
     });
   };
 
@@ -128,7 +128,7 @@ export function CharacterLibraryProvider({
       initialCharacters.find((entry) => entry.id === characterId) ??
       baselines.current.get(characterId);
     if (!original) {
-      setNotice({ tone: "error", text: "Det finns ingen sparad version att återställa." });
+      setNotice({ tone: "error", text: "There is no saved version to restore." });
       return;
     }
     setCharacters((current) =>
@@ -138,7 +138,10 @@ export function CharacterLibraryProvider({
     );
     setNotice({
       tone: "success",
-      text: `${original.name}'s folio is restored to the sample.`,
+      text:
+        characterId === "mira-thorn"
+          ? `${original.name} is restored to the sample.`
+          : `${original.name}'s equipment is restored.`,
     });
   };
 
@@ -194,7 +197,7 @@ export function LibraryNotice() {
     <div className={`notice notice-${notice.tone}`} role={notice.tone === "error" ? "alert" : "status"}>
       <p>{notice.text}</p>
       <button type="button" className="btn" onClick={dismissNotice}>
-        Stäng
+        Close
       </button>
     </div>
   );

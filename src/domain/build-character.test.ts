@@ -51,6 +51,6 @@ describe("buildCharacter", () => {
     expect(character.items.some((item) => item.name === "Okänt blad" && item.kind === "gear")).toBe(
       true,
     );
-    expect(character.buildNotes.some((note) => note.includes("rustningsklass 18"))).toBe(true);
+    expect(character.buildNotes.some((note) => note.includes("Armor Class 18"))).toBe(true);
   });
 });

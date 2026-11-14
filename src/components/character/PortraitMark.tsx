@@ -7,7 +7,7 @@ export function PortraitMark({ name }: { name: string }) {
     .toUpperCase();
 
   return (
-    <div className="portrait-mark" role="img" aria-label={`Mönster för ${name}`}>
+    <div className="portrait-mark" role="img" aria-label={`Portrait of ${name}`}>
       <span>{initials || "?"}</span>
     </div>
   );

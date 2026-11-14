@@ -12,25 +12,25 @@ export function characterIdFromName(name: string, suffix: string): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "")
     .slice(0, 40);
-  return `${base || "karaktar"}-${suffix}`;
+  return `${base || "character"}-${suffix}`;
 }
 
 export function buildCharacter(sheet: ParsedSheet, id: string): Character {
   const notes: string[] = [
-    "Värdena kommer från ett inläst pappersblad och har bekräftats i formuläret.",
-    "Klassdrag, trollformler och val som inte stod tydligt på bladet har inte hittats på.",
+    "These values come from a character sheet and were confirmed in the form.",
+    "Class features, spells, and choices that were not clearly written on the sheet were not invented.",
   ];
   const classProfile = findClass(sheet.className);
   if (!classProfile) {
     notes.push(
-      `${sheet.className} matchar ingen av de tolv klasserna i Player's Handbook 2014. Räddningar och vapenträning lämnades tomma.`,
+      `${sheet.className} does not match one of the twelve classes in the 2014 Player's Handbook. Saving throws and weapon proficiencies were left empty.`,
     );
   } else if (classProfile.weaponNote) {
     notes.push(classProfile.weaponNote);
   }
   if (sheet.sheetArmorClass) {
     notes.push(
-      `Pappersbladet visade rustningsklass ${sheet.sheetArmorClass}. Foliet räknar rustningsklass från buren rustning.`,
+      `The character sheet showed Armor Class ${sheet.sheetArmorClass}. This page calculates Armor Class from the armor you wear.`,
     );
   }
 
@@ -48,21 +48,21 @@ export function buildCharacter(sheet: ParsedSheet, id: string): Character {
         slots: ["armor"],
         quantity: 1,
         weightLbEach: known.weightLbEach,
-        description: `Rustning från Player's Handbook 2014. Grundvärde ${known.armor.baseAc}.`,
+        description: `Armor from the Player's Handbook (2014). Armor Class ${known.armor.baseAc}.`,
         source: "PHB 2014",
         armor: known.armor,
       });
       equipped.armor = idForItem;
     } else {
       notes.push(
-        `Rustningen "${armorName}" matchade ingen rustning i Player's Handbook 2014, så den ger ingen rustningsklass.`,
+        `The armor "${armorName}" does not match an armor in the 2014 Player's Handbook, so it grants no Armor Class.`,
       );
       pushItem(items, {
         name: armorName,
         kind: "gear",
         slots: [],
         quantity: 1,
-        description: "Namnet lästes från bladet. Ingen rustningsklass har hittats på.",
+        description: "The name was read from the sheet. No Armor Class was filled in.",
         source: "mundane",
       });
     }
@@ -72,12 +72,12 @@ export function buildCharacter(sheet: ParsedSheet, id: string): Character {
     const known = findArmor("shield");
     if (known?.kind === "shield") {
       const idForItem = pushItem(items, {
-        name: "Sköld",
+        name: "Shield",
         kind: "shield",
         slots: ["offHand"],
         quantity: 1,
         weightLbEach: known.weightLbEach,
-        description: "En sköld. Den ger +2 i rustningsklass.",
+        description: "Wielding a shield increases your Armor Class by 2.",
         source: "PHB 2014",
         armor: known.armor,
       });
@@ -97,7 +97,7 @@ export function buildCharacter(sheet: ParsedSheet, id: string): Character {
             slots: ["offHand"],
             quantity: 1,
             weightLbEach: known.weightLbEach,
-            description: "En sköld. Den ger +2 i rustningsklass.",
+            description: "Wielding a shield increases your Armor Class by 2.",
             source: "PHB 2014",
             armor: known.armor,
           });
@@ -110,14 +110,14 @@ export function buildCharacter(sheet: ParsedSheet, id: string): Character {
     const known = findWeapon(line);
     if (!known) {
       notes.push(
-        `"${line}" matchade inget vapen i Player's Handbook 2014. Det ligger i packningen utan påhittad skada.`,
+        `"${line}" does not match a weapon in the 2014 Player's Handbook. It is carried, with no invented damage.`,
       );
       pushItem(items, {
         name: line,
         kind: "gear",
         slots: [],
         quantity: 1,
-        description: "Namnet lästes från bladet. Skada och egenskaper är inte ifyllda.",
+        description: "The name was read from the sheet. Damage and properties are not filled in.",
         source: "mundane",
       });
       continue;
@@ -137,22 +137,22 @@ export function buildCharacter(sheet: ParsedSheet, id: string): Character {
     if (slot) {
       equipped[slot] = idForItem;
     } else {
-      notes.push(`${line} fick inte plats i en ledig vapenplats och ligger i packningen.`);
+      notes.push(`${line} did not fit an open weapon slot and is carried.`);
     }
   }
 
   if (items.length === 0) {
     const pouchId = pushItem(items, {
-      name: "Bältespåse",
+      name: "Pouch",
       kind: "gear",
       slots: ["belt"],
       quantity: 1,
       weightLbEach: 1,
-      description: "En tom påse, tillagd för att karaktären ska ha en utrustningsrad.",
+      description: "A cloth or leather pouch, added so the character has one piece of equipment.",
       source: "mundane",
     });
     equipped.belt = pouchId;
-    notes.push("Inget vapen eller någon rustning lästes in, så en tom bältespåse lades till.");
+    notes.push("No weapon or armor was read, so an empty pouch was added.");
   }
 
   const languages = sheet.languages
@@ -194,14 +194,14 @@ export function buildCharacter(sheet: ParsedSheet, id: string): Character {
     features: [
       {
         id: "sheet-import",
-        name: "Inläst från pappersblad",
+        name: "Read from a character sheet",
         summary:
-          "Klassdrag och trollformler som inte stod tydligt på bladet är inte med. Lägg till dem innan de används i spel.",
-        source: "Inläst blad",
+          "Class features and spells that were not clearly written on the sheet are not included. Add them before they are used in play.",
+        source: "Character sheet",
       },
     ],
     spellcasting: null,
-    biography: `${sheet.name} skapades från ett fotograferat eller uppladdat karaktärsblad.`,
+    biography: `${sheet.name} was created from a photographed or uploaded character sheet.`,
     buildNotes: notes,
     items,
     equipped,
@@ -227,10 +227,10 @@ function itemId(name: string, index: number): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "")
     .slice(0, 24);
-  return `${slug || "sak"}-${index}`;
+  return `${slug || "item"}-${index}`;
 }
 
 function weaponDescription(dice: string, properties: readonly string[]): string {
-  const hands = properties.includes("two-handed") ? " Kräver två händer." : "";
-  return `Vapen från Player's Handbook 2014. Skada ${dice}.${hands}`;
+  const hands = properties.includes("two-handed") ? " Two-handed." : "";
+  return `Weapon from the Player's Handbook (2014). Damage ${dice}.${hands}`;
 }

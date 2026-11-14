@@ -26,11 +26,11 @@ export async function generateMetadata({
   }
   const character = await loadVisibleCharacter(characterId);
   if (!character) {
-    return { title: "Okänd karaktär" };
+    return { title: "Unknown character" };
   }
   return {
     title: character.name,
-    description: `${character.name}, nivå ${character.level} ${character.ancestry} ${character.className}.`,
+    description: `${character.name}, level ${character.level} ${character.ancestry} ${character.className}.`,
   };
 }
 
@@ -43,7 +43,7 @@ export default function CharacterLayout({
 }) {
   return (
     <div className="page">
-      <Suspense fallback={<p className="loading-line">Öppnar bladet…</p>}>
+      <Suspense fallback={<p className="loading-line">Opening the character sheet…</p>}>
         <CharacterSectionNav params={params} />
       </Suspense>
       <LibraryNotice />

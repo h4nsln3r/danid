@@ -86,7 +86,7 @@ export function equipItem(
     };
   }
   if (item.quantity !== 1) {
-    return { ok: false, reason: `${item.name} is a stack and stays in the pack.` };
+    return { ok: false, reason: `${item.name} is a stack and stays in your equipment.` };
   }
   if (character.equipped[slot] === itemId) {
     return { ok: true, character, alreadyEquipped: true };

@@ -4,11 +4,11 @@ import { CompanyHome } from "@/components/company/CompanyHome";
 export default function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ fel?: string }>;
+  searchParams: Promise<{ error?: string }>;
 }) {
   return (
     <main className="page">
-      <Suspense fallback={<p className="loading-line">Öppnar sällskapet…</p>}>
+      <Suspense fallback={<p className="loading-line">Opening your characters…</p>}>
         <HomeContent searchParams={searchParams} />
       </Suspense>
     </main>
@@ -18,8 +18,8 @@ export default function HomePage({
 async function HomeContent({
   searchParams,
 }: {
-  searchParams: Promise<{ fel?: string }>;
+  searchParams: Promise<{ error?: string }>;
 }) {
   const params = await searchParams;
-  return <CompanyHome nameError={params.fel === "namn"} />;
+  return <CompanyHome nameError={params.error === "name"} />;
 }

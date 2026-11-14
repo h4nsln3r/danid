@@ -25,7 +25,7 @@ const CLASSES: ClassProfile[] = [
     armor: ["light"],
     weapons: ["simple"],
     weaponNote:
-      "Barden kan också handarmborst, långsvärd, värja och kortsvärd. Det är inte samma sak som träning i alla krigsvapen.",
+      "A bard is also proficient with hand crossbows, longswords, rapiers, and shortswords. That is not proficiency with all martial weapons.",
   },
   {
     id: "cleric",
@@ -41,7 +41,7 @@ const CLASSES: ClassProfile[] = [
     armor: ["light", "medium", "shield"],
     weapons: ["simple"],
     weaponNote:
-      "Druidens vapenlista är smalare än alla enkla vapen: klubba, dolk, pil, spjut, slunga, skära, lie, stav och sabel. Träffbonusen kan därför vara för hög för ett annat enkelt vapen.",
+      "A druid's weapons are clubs, daggers, darts, javelins, maces, quarterstaffs, scimitars, sickles, slings, and spears. The attack bonus can be too high for another simple weapon.",
   },
   {
     id: "fighter",
@@ -56,7 +56,7 @@ const CLASSES: ClassProfile[] = [
     saves: ["strength", "dexterity"],
     armor: [],
     weapons: ["simple"],
-    weaponNote: "Munken kan också kortsvärd, utöver enkla vapen.",
+    weaponNote: "A monk is also proficient with shortswords, in addition to simple weapons.",
   },
   {
     id: "paladin",
@@ -79,7 +79,7 @@ const CLASSES: ClassProfile[] = [
     armor: ["light"],
     weapons: ["simple"],
     weaponNote:
-      "Tjuven kan också handarmborst, långsvärd, värja och kortsvärd. Det är inte samma sak som träning i alla krigsvapen.",
+      "A rogue is also proficient with hand crossbows, longswords, rapiers, and shortswords. That is not proficiency with all martial weapons.",
   },
   {
     id: "sorcerer",
@@ -88,7 +88,7 @@ const CLASSES: ClassProfile[] = [
     armor: [],
     weapons: ["simple"],
     weaponNote:
-      "Trollkarlens vapen är dolk, pil, slunga, stav och lätt armborst. Markeringen för enkla vapen är bredare än den listan.",
+      "A sorcerer's weapons are daggers, darts, slings, quarterstaffs, and light crossbows. The simple-weapon flag is wider than that list.",
   },
   {
     id: "warlock",
@@ -104,7 +104,7 @@ const CLASSES: ClassProfile[] = [
     armor: [],
     weapons: ["simple"],
     weaponNote:
-      "Magikerns vapen är dolk, pil, slunga, stav och lätt armborst. Markeringen för enkla vapen är bredare än den listan.",
+      "A wizard's weapons are daggers, darts, slings, quarterstaffs, and light crossbows. The simple-weapon flag is wider than that list.",
   },
 ];
 

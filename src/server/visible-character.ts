@@ -29,3 +29,15 @@ export async function visibleSheetFile(characterId: string): Promise<string | un
   const stored = await getOwnedCharacter(playerId, characterId);
   return stored?.sheetFile ?? undefined;
 }
+
+export async function visiblePortraitFile(characterId: string): Promise<string | undefined> {
+  if (getCharacter(characterId)) {
+    return undefined;
+  }
+  const playerId = await currentPlayerId();
+  if (!playerId) {
+    return undefined;
+  }
+  const stored = await getOwnedCharacter(playerId, characterId);
+  return stored?.portraitFile ?? undefined;
+}
