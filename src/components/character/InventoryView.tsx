@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useState, type ReactNode } from "react";
-import { SLOT_LABELS, SOURCE_LABELS } from "@/domain/catalog";
+import { slotName, sourceName } from "@/domain/locale";
 import { formatWeight, itemWeightLb } from "@/domain/format";
 import type { Character, InventoryItem } from "@/domain/schema";
 import { EQUIPMENT_SLOT_IDS } from "@/domain/schema";
@@ -15,6 +15,7 @@ import {
   useCharacterLibrary,
   useLiveCharacter,
 } from "@/components/providers/CharacterLibraryProvider";
+import { useCopy, useLocale } from "@/components/providers/LocaleProvider";
 
 export function InventoryView({
   source,
@@ -25,14 +26,16 @@ export function InventoryView({
 }) {
   const character = useLiveCharacter(source, canEdit);
   const { equip, stow } = useCharacterLibrary();
+  const t = useCopy();
+  const locale = useLocale();
   const [query, setQuery] = useState("");
   const searchId = useId();
 
   if (!character) {
     return (
       <section className="error-state" role="alert">
-        <h1>This equipment is missing</h1>
-        <p>There is no character with that id.</p>
+        <h1>{t.errors.unknown}</h1>
+        <p>{t.errors.noCharacterHere}</p>
       </section>
     );
   }
@@ -58,9 +61,9 @@ export function InventoryView({
     <article className="folio">
       <header className="identity">
         <p className="eyebrow">{character.name}</p>
-        <h1>Equipment</h1>
+        <h1>{t.gear.title}</h1>
         <p className="identity-meta">
-          {formatWeight(totalWeightLb(character))} carried. Carrying Capacity{" "}
+          {formatWeight(totalWeightLb(character))} {t.gear.carried}. {t.gear.capacity}{" "}
           {formatWeight(carryingCapacity(character))}.
         </p>
       </header>
@@ -70,23 +73,23 @@ export function InventoryView({
         role="search"
         onSubmit={(event) => event.preventDefault()}
       >
-        <label htmlFor={searchId}>Search equipment</label>
+        <label htmlFor={searchId}>{t.gear.search}</label>
         <input
           id={searchId}
           className="field"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Shield, rope, arrows"
+          placeholder={t.gear.placeholder}
         />
       </form>
 
       <div className="inventory-grid">
         <section className="panel" aria-labelledby="worn-heading">
-          <h2 id="worn-heading">Worn</h2>
+          <h2 id="worn-heading">{t.gear.worn}</h2>
           {worn.length === 0 ? (
             <div className="empty-state">
-              <p className="empty-title">Nothing worn matches</p>
-              <p>Clear the search or choose another word.</p>
+              <p className="empty-title">{t.gear.nothingWorn}</p>
+              <p>{t.gear.clearSearch}</p>
             </div>
           ) : (
             <ul className="gear-list">
@@ -94,7 +97,7 @@ export function InventoryView({
                 <GearRow
                   key={slot}
                   item={item}
-                  eyebrow={SLOT_LABELS[slot]}
+                  eyebrow={slotName(locale, slot)}
                   action={
                     canEdit ? (
                       <button
@@ -102,7 +105,7 @@ export function InventoryView({
                         className="btn"
                         onClick={() => stow(character.id, slot)}
                       >
-                        Stow {item.name}
+                        {t.gear.stow} {item.name}
                       </button>
                     ) : null
                   }
@@ -113,16 +116,14 @@ export function InventoryView({
         </section>
 
         <section className="panel" aria-labelledby="pack-heading">
-          <h2 id="pack-heading">Carried</h2>
+          <h2 id="pack-heading">{t.gear.pack}</h2>
           {pack.length === 0 ? (
             <div className="empty-state">
               <p className="empty-title">
-                {needle ? "Nothing carried matches" : "Nothing is carried"}
+                {needle ? t.gear.nothingCarried : t.gear.nothingHeld}
               </p>
               <p>
-                {needle
-                  ? "Try a shorter search, or clear the field to see every carried item."
-                  : "Every item is worn, or no equipment has been filled in."}
+                {needle ? t.gear.shorter : t.gear.allWorn}
               </p>
             </div>
           ) : (
@@ -131,7 +132,7 @@ export function InventoryView({
                 <GearRow
                   key={item.id}
                   item={item}
-                  eyebrow={item.slots.length === 0 ? "Carried, not worn" : "Not worn"}
+                  eyebrow={item.slots.length === 0 ? t.gear.carriedOnly : t.gear.notWorn}
                   action={
                     !canEdit || item.slots.length === 0 ? null : (
                       <div className="button-row">
@@ -142,7 +143,7 @@ export function InventoryView({
                             className="btn btn-primary"
                             onClick={() => equip(character.id, item.id, slot)}
                           >
-                            Equip to {SLOT_LABELS[slot]}
+                            {t.gear.equipTo} {slotName(locale, slot)}
                           </button>
                         ))}
                       </div>
@@ -167,6 +168,7 @@ function GearRow({
   eyebrow: string;
   action: ReactNode;
 }) {
+  const locale = useLocale();
   const weight = itemWeightLb(item);
   return (
     <li className="gear-row">
@@ -178,7 +180,7 @@ function GearRow({
         </h3>
         <p>{item.description}</p>
         <p className="fine-print">
-          {SOURCE_LABELS[item.source]}
+          {sourceName(locale, item.source)}
           {weight === undefined ? "" : ` · ${formatWeight(weight)}`}
         </p>
       </div>

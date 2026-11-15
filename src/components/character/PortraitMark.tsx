@@ -1,4 +1,9 @@
+"use client";
+
+import { useCopy } from "@/components/providers/LocaleProvider";
+
 export function PortraitMark({ name }: { name: string }) {
+  const t = useCopy();
   const initials = name
     .split(/\s+/)
     .slice(0, 2)
@@ -7,7 +12,7 @@ export function PortraitMark({ name }: { name: string }) {
     .toUpperCase();
 
   return (
-    <div className="portrait-mark" role="img" aria-label={`Portrait of ${name}`}>
+    <div className="portrait-mark" role="img" aria-label={`${t.home.portraitOf} ${name}`}>
       <span>{initials || "?"}</span>
     </div>
   );

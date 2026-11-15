@@ -162,6 +162,16 @@ a {
   text-transform: uppercase;
 }
 
+.lang-switch {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.lang-switch .btn {
+  min-height: 2.25rem;
+  padding: 0.2rem 0.75rem;
+}
+
 .nav-list {
   display: flex;
   flex-wrap: wrap;

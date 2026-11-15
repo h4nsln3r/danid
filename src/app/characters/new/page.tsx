@@ -1,12 +1,13 @@
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
+import { LoadingLine } from "@/components/layout/LoadingLine";
 import { CreateCharacterForm } from "@/components/character/CreateCharacterForm";
 import { currentPlayer } from "@/server/players";
 
 export default function NewCharacterPage() {
   return (
     <main className="page">
-      <Suspense fallback={<p className="loading-line">Opening the form…</p>}>
+      <Suspense fallback={<LoadingLine label="form" />}>
         <NewCharacterGate />
       </Suspense>
     </main>

@@ -1,12 +1,15 @@
 import Link from "next/link";
+import { copyFor } from "@/domain/copy";
+import { currentLocale } from "@/server/locale";
 
-export default function CharacterNotFound() {
+export default async function CharacterNotFound() {
+  const t = copyFor(await currentLocale());
   return (
     <section className="error-state">
-      <h1>No character at this address</h1>
-      <p>This player has no character here.</p>
+      <h1>{t.errors.noCharacter}</h1>
+      <p>{t.errors.noCharacterHere}</p>
       <Link className="btn btn-primary" href="/">
-        Back to your characters
+        {t.errors.back}
       </Link>
     </section>
   );

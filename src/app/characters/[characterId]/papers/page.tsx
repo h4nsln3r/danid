@@ -1,3 +1,5 @@
+import { copyFor } from "@/domain/copy";
+import { currentLocale } from "@/server/locale";
 import { PapersView } from "@/components/character/PapersView";
 import { portraitGallery, sheetPageMap } from "@/server/library-store";
 import { ownedCharacter } from "@/server/visible-character";
@@ -9,11 +11,12 @@ export default async function PapersPage({
 }) {
   const { characterId } = await params;
   const entry = await ownedCharacter(characterId);
+  const t = copyFor(await currentLocale());
   if (!entry) {
     return (
       <section className="panel">
-        <h1>Papers stay with the player</h1>
-        <p>Only the player who created this character can open the photographed pages.</p>
+        <h1>{t.papers.lockedTitle}</h1>
+        <p>{t.papers.lockedText}</p>
       </section>
     );
   }

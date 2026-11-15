@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useCopy } from "@/components/providers/LocaleProvider";
 
 export function CharacterNav({
   characterId,
@@ -15,18 +16,19 @@ export function CharacterNav({
   owned?: boolean;
 }) {
   const pathname = usePathname();
+  const t = useCopy();
   const overview = `/characters/${characterId}`;
   const pack = `${overview}/inventory`;
   const links = [
-    { href: overview, label: "Character" },
-    { href: pack, label: "Equipment" },
-    ...(owned ? [{ href: `${overview}/papers`, label: "Papers" }] : []),
+    { href: overview, label: t.characterNav.character },
+    { href: pack, label: t.characterNav.equipment },
+    ...(owned ? [{ href: `${overview}/papers`, label: t.characterNav.papers }] : []),
   ];
 
   return (
     <div className="character-nav">
       <p className="character-nav-name">{name}</p>
-      <nav aria-label={`${name} sections`}>
+      <nav aria-label={`${name} ${t.characterNav.sections}`}>
         <ul className="nav-list">
           {links.map((link) => (
             <li key={link.href}>
@@ -42,7 +44,7 @@ export function CharacterNav({
           {hasSheet ? (
             <li>
               <a className="nav-link" href={`/characters/${characterId}/sheet`} target="_blank" rel="noreferrer">
-                Character Sheet
+                {t.characterNav.sheet}
               </a>
             </li>
           ) : null}

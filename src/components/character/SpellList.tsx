@@ -1,15 +1,20 @@
-import { ABILITY_LABELS } from "@/domain/catalog";
+"use client";
+
+import { abilityName } from "@/domain/locale";
 import { formatModifier } from "@/domain/format";
 import type { Character } from "@/domain/schema";
 import { spellAttackBonus, spellSaveDc } from "@/domain/rules/combat";
+import { useCopy, useLocale } from "@/components/providers/LocaleProvider";
 
 export function SpellList({ character }: { character: Character }) {
+  const t = useCopy();
+  const locale = useLocale();
   const casting = character.spellcasting;
   if (!casting) {
     return (
       <section className="panel" aria-labelledby="spells-heading">
-        <h2 id="spells-heading">Spellcasting</h2>
-        <p>This character has no spellcasting.</p>
+        <h2 id="spells-heading">{t.sheet.spells}</h2>
+        <p>{t.sheet.noSpells}</p>
       </section>
     );
   }
@@ -19,22 +24,19 @@ export function SpellList({ character }: { character: Character }) {
 
   return (
     <section className="panel" aria-labelledby="spells-heading">
-      <h2 id="spells-heading">Spellcasting</h2>
-      <p className="fine-print">
-        Ranger spells from the 2014 Player&apos;s Handbook. The lines below are
-        short reminders, and the slots are shown full.
-      </p>
+      <h2 id="spells-heading">{t.sheet.spells}</h2>
+      <p className="fine-print">{t.sheet.spellNote}</p>
       <dl className="stat-grid">
         <div>
-          <dt>Spellcasting Ability</dt>
-          <dd>{ABILITY_LABELS[casting.ability]}</dd>
+          <dt>{t.sheet.spellAbility}</dt>
+          <dd>{abilityName(locale, casting.ability)}</dd>
         </div>
         <div>
-          <dt>Spell Save DC</dt>
+          <dt>{t.sheet.spellSave}</dt>
           <dd>{saveDc}</dd>
         </div>
         <div>
-          <dt>Spell Attack Modifier</dt>
+          <dt>{t.sheet.spellAttack}</dt>
           <dd>{attack === null ? "—" : formatModifier(attack)}</dd>
         </div>
       </dl>
@@ -42,8 +44,8 @@ export function SpellList({ character }: { character: Character }) {
         {casting.slots.map((slot) => (
           <li key={slot.level}>
             <span>
-              {spellLevelName(slot.level)}, {slot.total}{" "}
-              {slot.total === 1 ? "slot" : "slots"}
+              {spellLevelName(slot.level, t.sheet.cantrip, locale)}, {slot.total}{" "}
+              {slot.total === 1 ? t.sheet.slotOne : t.sheet.slotMany}
             </span>
             <span className="pip-row" aria-hidden="true">
               {Array.from({ length: slot.total }, (_, index) => (
@@ -58,7 +60,7 @@ export function SpellList({ character }: { character: Character }) {
           <li key={spell.name}>
             <h3>
               {spell.name}
-              <span className="feature-source">{spellLevelName(spell.level)}</span>
+              <span className="feature-source">{spellLevelName(spell.level, t.sheet.cantrip, locale)}</span>
             </h3>
             <p>{spell.summary}</p>
           </li>
@@ -68,9 +70,12 @@ export function SpellList({ character }: { character: Character }) {
   );
 }
 
-function spellLevelName(level: number): string {
+function spellLevelName(level: number, cantrip: string, locale: "en" | "sv"): string {
   if (level === 0) {
-    return "Cantrip";
+    return cantrip;
+  }
+  if (locale === "sv") {
+    return `nivå ${level}`;
   }
   const suffix = level === 1 ? "st" : level === 2 ? "nd" : level === 3 ? "rd" : "th";
   return `${level}${suffix}-level`;

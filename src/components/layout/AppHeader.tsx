@@ -3,15 +3,18 @@
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-const LINKS = [
-  { href: "/", label: "Characters" },
-  { href: "/company", label: "All Characters" },
-  { href: "/characters/new", label: "New Character" },
-  { href: "/campaigns", label: "Campaigns" },
-];
+import { setLocale } from "@/app/actions/locale";
+import { useCopy, useLocale } from "@/components/providers/LocaleProvider";
 
 export function AppHeader() {
+  const t = useCopy();
+  const locale = useLocale();
+  const links = [
+    { href: "/", label: t.nav.characters },
+    { href: "/company", label: t.nav.company },
+    { href: "/characters/new", label: t.nav.newCharacter },
+    { href: "/campaigns", label: t.nav.campaigns },
+  ];
   return (
     <header className="site-header">
       <Link href="/" className="brand">
@@ -20,20 +23,47 @@ export function AppHeader() {
         </span>
         <span>
           <span className="brand-name">Companion</span>
-          <span className="brand-sub">Fifth Edition</span>
+          <span className="brand-sub">{t.brand}</span>
         </span>
       </Link>
-      <Suspense fallback={<span className="nav-fallback">Menu</span>}>
-        <AppNav />
+      <form className="lang-switch" action={setLocale}>
+        <span className="sr-only">{t.language}</span>
+        <button
+          type="submit"
+          name="locale"
+          value="sv"
+          className={locale === "sv" ? "btn btn-primary" : "btn"}
+          aria-pressed={locale === "sv"}
+        >
+          {t.swedish}
+        </button>
+        <button
+          type="submit"
+          name="locale"
+          value="en"
+          className={locale === "en" ? "btn btn-primary" : "btn"}
+          aria-pressed={locale === "en"}
+        >
+          {t.english}
+        </button>
+      </form>
+      <Suspense fallback={<span className="nav-fallback">{t.nav.menu}</span>}>
+        <AppNav links={links} />
       </Suspense>
     </header>
   );
 }
 
-function AppNav() {
+function AppNav({ links }: { links: Array<{ href: string; label: string }> }) {
+  const t = useCopy();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [menuPath, setMenuPath] = useState(pathname);
   const [compact, setCompact] = useState(false);
+  if (menuPath !== pathname) {
+    setMenuPath(pathname);
+    setOpen(false);
+  }
 
   useEffect(() => {
     const query = window.matchMedia("(max-width: 759px)");
@@ -42,10 +72,6 @@ function AppNav() {
     query.addEventListener("change", apply);
     return () => query.removeEventListener("change", apply);
   }, []);
-
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
 
   useEffect(() => {
     if (!open || !compact) {
@@ -79,26 +105,26 @@ function AppNav() {
           <span />
           <span />
         </span>
-        <span className="sr-only">{open ? "Close menu" : "Open menu"}</span>
+        <span className="sr-only">{open ? t.nav.closeMenu : t.nav.openMenu}</span>
       </button>
       <div className={open ? "menu-layer is-open" : "menu-layer"}>
         <button
           type="button"
           className="menu-scrim"
           aria-hidden={!(compact && open)}
-          aria-label="Close menu"
+          aria-label={t.nav.closeMenu}
           tabIndex={compact && open ? 0 : -1}
           onClick={() => setOpen(false)}
         />
         <nav
           id="primary-menu"
-          aria-label="Primary"
+          aria-label={t.nav.primary}
           className="menu-panel"
           inert={compact && !open ? true : undefined}
         >
           <p className="menu-kicker">Companion</p>
           <ul className="nav-list">
-            {LINKS.map((link) => (
+            {links.map((link) => (
               <li key={link.href}>
                 <Link
                   href={link.href}

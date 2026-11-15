@@ -1,7 +1,12 @@
+"use client";
+
+import { useCopy } from "@/components/providers/LocaleProvider";
+
 export function SheetSkeleton() {
+  const t = useCopy();
   return (
     <div className="skeleton" aria-busy="true" aria-live="polite">
-      <p>Loading the character sheet…</p>
+      <p>{t.loading.skeleton}</p>
       <div className="skeleton-grid">
         <div className="skeleton-block" />
         <div className="skeleton-block skeleton-tall" />

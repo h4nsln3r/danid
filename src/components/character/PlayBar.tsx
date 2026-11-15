@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { savePlayTotals } from "@/app/actions/play";
 import type { Character } from "@/domain/schema";
 import { arrowCount } from "@/domain/rules/play";
+import { useCopy } from "@/components/providers/LocaleProvider";
 import { useCharacterLibrary } from "@/components/providers/CharacterLibraryProvider";
 
 export function PlayBar({
@@ -16,6 +17,7 @@ export function PlayBar({
   rememberPlay: boolean;
 }) {
   const { setHitPoints, setArrows } = useCharacterLibrary();
+  const t = useCopy();
   const saves = useRef(Promise.resolve());
   const totals = useRef({
     hitPoints: character.currentHitPoints,
@@ -43,12 +45,12 @@ export function PlayBar({
   return (
     <div className="play-bar">
       <Counter
-        label="Hit Points"
+        label={t.play.hitPoints}
         value={character.currentHitPoints}
         detail={` / ${character.maxHitPoints}`}
         canEdit={canEdit}
-        decreaseLabel="Lose 1 hit point"
-        increaseLabel="Heal 1 hit point"
+        decreaseLabel={t.play.loseHp}
+        increaseLabel={t.play.healHp}
         onCommit={(next) => {
           const arrows = totals.current.arrows;
           totals.current = { hitPoints: next, arrows };
@@ -57,11 +59,11 @@ export function PlayBar({
         }}
       />
       <Counter
-        label="Arrows"
+        label={t.play.arrows}
         value={arrowCount(character)}
         canEdit={canEdit}
-        decreaseLabel="Use 1 arrow"
-        increaseLabel="Recover 1 arrow"
+        decreaseLabel={t.play.useArrow}
+        increaseLabel={t.play.recoverArrow}
         onCommit={(next) => {
           const hitPoints = totals.current.hitPoints;
           totals.current = { hitPoints, arrows: next };
@@ -96,11 +98,12 @@ function Counter({
   onCommit: (next: number) => void;
 }) {
   const [draft, setDraft] = useState(String(value));
-  const inputId = useRef(`play-${label.replace(/\s+/g, "-").toLowerCase()}`);
-
-  useEffect(() => {
+  const [tracked, setTracked] = useState(value);
+  const inputId = useId();
+  if (tracked !== value) {
+    setTracked(value);
     setDraft(String(value));
-  }, [value]);
+  }
 
   function shown(): number {
     const parsed = Number(draft);
@@ -121,7 +124,7 @@ function Counter({
 
   return (
     <div className="play-counter">
-      <label className="play-label" htmlFor={inputId.current}>
+      <label className="play-label" htmlFor={inputId}>
         {label}
       </label>
       <span className="play-steps">
@@ -134,7 +137,7 @@ function Counter({
           −
         </button>
         <input
-          id={inputId.current}
+          id={inputId}
           className="play-input"
           inputMode="numeric"
           value={draft}

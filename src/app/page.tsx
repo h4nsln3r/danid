@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { LoadingLine } from "@/components/layout/LoadingLine";
 import { CompanyHome } from "@/components/company/CompanyHome";
 
 export default function HomePage({
@@ -8,7 +9,7 @@ export default function HomePage({
 }) {
   return (
     <main className="page">
-      <Suspense fallback={<p className="loading-line">Opening your characters…</p>}>
+      <Suspense fallback={<LoadingLine label="home" />}>
         <HomeContent searchParams={searchParams} />
       </Suspense>
     </main>

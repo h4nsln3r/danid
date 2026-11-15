@@ -1,9 +1,13 @@
+"use client";
+
+import { useCopy } from "@/components/providers/LocaleProvider";
 import type { Character } from "@/domain/schema";
 
 export function FeatureList({ character }: { character: Character }) {
+  const t = useCopy();
   return (
     <section className="panel" aria-labelledby="features-heading">
-      <h2 id="features-heading">Features & Traits</h2>
+      <h2 id="features-heading">{t.sheet.features}</h2>
       <ul className="feature-list">
         {character.features.map((feature) => (
           <li key={feature.id}>

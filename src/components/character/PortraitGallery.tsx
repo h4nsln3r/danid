@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useCopy } from "@/components/providers/LocaleProvider";
 
 export function PortraitGallery({
   name,
@@ -13,6 +14,7 @@ export function PortraitGallery({
   shownUrl: string;
   children: ReactNode;
 }) {
+  const t = useCopy();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [open, setOpen] = useState(false);
   const [index, setIndex] = useState(0);
@@ -39,7 +41,7 @@ export function PortraitGallery({
       <button
         type="button"
         className="face-badge face-badge-button"
-        aria-label={`Show the pictures of ${name}`}
+        aria-label={`${t.gallery.show} ${name}`}
         onClick={() => {
           const shown = urls.indexOf(shownUrl);
           setIndex(shown >= 0 ? shown : 0);
@@ -51,7 +53,7 @@ export function PortraitGallery({
       <dialog
         ref={dialogRef}
         className="portrait-viewer"
-        aria-label={`Pictures of ${name}`}
+        aria-label={`${t.gallery.picturesOf} ${name}`}
         onClose={() => setOpen(false)}
         onCancel={(event) => {
           event.preventDefault();
@@ -76,19 +78,19 @@ export function PortraitGallery({
         {open && urls[index] ? (
           <div className="portrait-viewer-frame">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={urls[index]} alt={`${name}, picture ${index + 1} of ${urls.length}`} />
+            <img src={urls[index]} alt={t.gallery.caption.replace("{name}", name).replace("{n}", String(index + 1)).replace("{total}", String(urls.length))} />
             <div className="portrait-viewer-bar">
               <button type="button" className="btn" onClick={() => step(-1)} disabled={urls.length < 2}>
-                Previous
+                {t.gallery.previous}
               </button>
               <p>
-                {index + 1} of {urls.length}
+                {t.gallery.counter.replace("{n}", String(index + 1)).replace("{total}", String(urls.length))}
               </p>
               <button type="button" className="btn" onClick={() => step(1)} disabled={urls.length < 2}>
-                Next
+                {t.gallery.next}
               </button>
               <button type="button" className="btn" onClick={() => setOpen(false)}>
-                Close
+                {t.gallery.close}
               </button>
             </div>
           </div>

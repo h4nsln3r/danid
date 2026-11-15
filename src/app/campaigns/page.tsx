@@ -1,26 +1,20 @@
-import type { Metadata } from "next";
 import Link from "next/link";
+import { copyFor } from "@/domain/copy";
+import { currentLocale } from "@/server/locale";
 
-export const metadata: Metadata = {
-  title: "Campaigns",
-  description: "Campaigns come in a later phase.",
-};
-
-export default function CampaignsPage() {
+export default async function CampaignsPage() {
+  const t = copyFor(await currentLocale());
   return (
     <main className="page">
       <header className="identity">
-        <p className="eyebrow">Later phase</p>
-        <h1>Campaigns</h1>
+        <p className="eyebrow">{t.campaigns.later}</p>
+        <h1>{t.campaigns.title}</h1>
       </header>
       <section className="panel empty-state">
-        <h2>Campaigns are planned</h2>
-        <p>
-          Shared tables, invitations, and permissions will live here. None of
-          that is built yet, so there is no campaign to open.
-        </p>
+        <h2>{t.campaigns.planned}</h2>
+        <p>{t.campaigns.text}</p>
         <Link className="btn btn-primary" href="/">
-          Back to your characters
+          {t.campaigns.back}
         </Link>
       </section>
     </main>

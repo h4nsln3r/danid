@@ -9,10 +9,11 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { SLOT_LABELS } from "@/domain/catalog";
+import { slotName } from "@/domain/locale";
 import type { Character, EquipmentSlotId } from "@/domain/schema";
 import { equipItem, stowItem } from "@/domain/rules/equipment";
 import { arrowCount, withArrowCount, withHitPoints } from "@/domain/rules/play";
+import { useCopy, useLocale } from "@/components/providers/LocaleProvider";
 
 interface Notice {
   tone: "success" | "error";
@@ -41,6 +42,8 @@ export function CharacterLibraryProvider({
   initialCharacters: Character[];
   children: ReactNode;
 }) {
+  const t = useCopy();
+  const locale = useLocale();
   const [characters, setCharacters] = useState<Character[]>(() =>
     structuredClone(initialCharacters),
   );
@@ -56,7 +59,7 @@ export function CharacterLibraryProvider({
     }
     setNotice({
       tone: "error",
-      text: "Only the player who created this character can change it.",
+      text: t.library.onlyOwner,
     });
     return true;
   };
@@ -91,12 +94,12 @@ export function CharacterLibraryProvider({
     if (!character) {
       setNotice({
         tone: "error",
-        text: "That character is not in the library.",
+        text: t.library.missing,
       });
       return;
     }
 
-    const result = equipItem(character, itemId, slot);
+    const result = equipItem(character, itemId, slot, locale);
     if (!result.ok) {
       setNotice({ tone: "error", text: result.reason });
       return;
@@ -114,13 +117,13 @@ export function CharacterLibraryProvider({
     const displaced = result.displacedItemId
       ? character.items.find((entry) => entry.id === result.displacedItemId)
       : undefined;
-    const name = item?.name ?? "Item";
-    const slotLabel = SLOT_LABELS[slot].toLowerCase();
+    const name = item?.name ?? t.library.item;
+    const slotLabel = slotName(locale, slot).toLowerCase();
     let text = result.alreadyEquipped
-      ? `${name} is already worn in the ${slotLabel} slot.`
-      : `${name} is now in the ${slotLabel} slot.`;
+      ? `${name} ${t.library.alreadyWorn} ${slotLabel} ${t.library.slot}.`
+      : `${name} ${t.library.nowIn} ${slotLabel} ${t.library.slot}.`;
     if (displaced) {
-      text += ` ${displaced.name} went back into your equipment.`;
+      text += ` ${displaced.name} ${t.library.wentBack}`;
     }
     setNotice({ tone: "success", text });
   };
@@ -133,12 +136,12 @@ export function CharacterLibraryProvider({
     if (!character) {
       setNotice({
         tone: "error",
-        text: "That character is not in the library.",
+        text: t.library.missing,
       });
       return;
     }
 
-    const result = stowItem(character, slot);
+    const result = stowItem(character, slot, locale);
     if (!result.ok) {
       setNotice({ tone: "error", text: result.reason });
       return;
@@ -154,7 +157,7 @@ export function CharacterLibraryProvider({
     );
     setNotice({
       tone: "success",
-      text: `${item?.name ?? "The item"} is back in your equipment.`,
+      text: `${item?.name ?? t.library.theItem} ${t.library.backIn}`,
     });
   };
 
@@ -166,7 +169,7 @@ export function CharacterLibraryProvider({
       initialCharacters.find((entry) => entry.id === characterId) ??
       baselines.current.get(characterId);
     if (!original) {
-      setNotice({ tone: "error", text: "There is no saved version to restore." });
+      setNotice({ tone: "error", text: t.library.noSaved });
       return;
     }
     setCharacters((current) =>
@@ -187,8 +190,8 @@ export function CharacterLibraryProvider({
       tone: "success",
       text:
         characterId === "mira-thorn"
-          ? `${original.name} is restored to the sample.`
-          : `${original.name}'s equipment is restored.`,
+          ? `${original.name} ${t.library.restoredSample}`
+          : `${original.name}: ${t.library.restoredEquipment}`,
     });
   };
 
@@ -259,6 +262,7 @@ export function useLiveCharacter(source: Character, editable = false): Character
 
 export function LibraryNotice() {
   const { notice, dismissNotice } = useCharacterLibrary();
+  const t = useCopy();
   if (!notice) {
     return null;
   }
@@ -267,7 +271,7 @@ export function LibraryNotice() {
     <div className={`notice notice-${notice.tone}`} role={notice.tone === "error" ? "alert" : "status"}>
       <p>{notice.text}</p>
       <button type="button" className="btn" onClick={dismissNotice}>
-        Close
+        {t.library.close}
       </button>
     </div>
   );

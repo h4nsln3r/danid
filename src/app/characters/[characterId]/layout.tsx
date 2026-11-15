@@ -1,8 +1,11 @@
 import { Suspense, type ReactNode } from "react";
 import type { Metadata } from "next";
+import { LoadingLine } from "@/components/layout/LoadingLine";
 import { CharacterNav } from "@/components/layout/CharacterNav";
 import { LibraryNotice } from "@/components/providers/CharacterLibraryProvider";
 import { getCharacter, listCharacters } from "@/domain/characters";
+import { copyFor } from "@/domain/copy";
+import { currentLocale } from "@/server/locale";
 import { ownedCharacter, visibleSheetFile, loadVisibleCharacter } from "@/server/visible-character";
 
 export async function generateStaticParams() {
@@ -25,8 +28,9 @@ export async function generateMetadata({
     };
   }
   const character = await loadVisibleCharacter(characterId);
+  const t = copyFor(await currentLocale());
   if (!character) {
-    return { title: "Unknown character" };
+    return { title: t.errors.unknown };
   }
   return {
     title: character.name,
@@ -43,7 +47,7 @@ export default function CharacterLayout({
 }) {
   return (
     <div className="page">
-      <Suspense fallback={<p className="loading-line">Opening the character sheet…</p>}>
+      <Suspense fallback={<LoadingLine label="sheet" />}>
         <CharacterSectionNav params={params} />
       </Suspense>
       <LibraryNotice />

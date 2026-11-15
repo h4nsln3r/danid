@@ -1,4 +1,4 @@
-import { SLOT_LABELS } from "@/domain/catalog";
+import { slotName, type Locale } from "@/domain/locale";
 import type { Character, EquipmentSlotId, InventoryItem } from "@/domain/schema";
 import { EQUIPMENT_SLOT_IDS } from "@/domain/schema";
 
@@ -74,19 +74,33 @@ export function equipItem(
   character: Character,
   itemId: string,
   slot: EquipmentSlotId,
+  locale: Locale = "en",
 ): EquipResult {
   const item = character.items.find((entry) => entry.id === itemId);
+  const place = slotName(locale, slot).toLowerCase();
   if (!item) {
-    return { ok: false, reason: "That item is not on this character." };
+    return {
+      ok: false,
+      reason: locale === "sv" ? "Det föremålet finns inte på karaktären." : "That item is not on this character.",
+    };
   }
   if (!item.slots.includes(slot)) {
     return {
       ok: false,
-      reason: `${item.name} does not fit the ${SLOT_LABELS[slot].toLowerCase()} slot.`,
+      reason:
+        locale === "sv"
+          ? `${item.name} passar inte på platsen ${place}.`
+          : `${item.name} does not fit the ${place} slot.`,
     };
   }
   if (item.quantity !== 1) {
-    return { ok: false, reason: `${item.name} is a stack and stays in your equipment.` };
+    return {
+      ok: false,
+      reason:
+        locale === "sv"
+          ? `${item.name} är en hög och stannar i utrustningen.`
+          : `${item.name} is a stack and stays in your equipment.`,
+    };
   }
   if (character.equipped[slot] === itemId) {
     return { ok: true, character, alreadyEquipped: true };
@@ -110,12 +124,17 @@ export function equipItem(
 export function stowItem(
   character: Character,
   slot: EquipmentSlotId,
+  locale: Locale = "en",
 ): EquipResult {
   const itemId = character.equipped[slot];
+  const place = slotName(locale, slot).toLowerCase();
   if (!itemId) {
     return {
       ok: false,
-      reason: `The ${SLOT_LABELS[slot].toLowerCase()} slot is already empty.`,
+      reason:
+        locale === "sv"
+          ? `Platsen ${place} är redan tom.`
+          : `The ${place} slot is already empty.`,
     };
   }
   const equipped: Character["equipped"] = { ...character.equipped };

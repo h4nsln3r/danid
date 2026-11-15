@@ -1,4 +1,6 @@
 import { ABILITY_SHORT } from "@/domain/catalog";
+import { abilityShort, armorTrainingName, damageName } from "@/domain/locale";
+import type { Locale } from "@/domain/locale";
 import { formatDamage, formatModifier } from "@/domain/format";
 import type {
   Ability,
@@ -11,6 +13,12 @@ import { equippedItem } from "@/domain/rules/equipment";
 
 export const TWO_HANDED_SHIELD_REASON =
   "This weapon needs both hands, and a shield is worn.";
+
+export function twoHandedShieldReason(locale: Locale = "en"): string {
+  return locale === "sv"
+    ? "Vapnet kräver två händer, och en sköld är buren."
+    : TWO_HANDED_SHIELD_REASON;
+}
 
 const ATTACK_SLOTS = ["mainHand", "offHand", "ranged"] as const satisfies readonly EquipmentSlotId[];
 
@@ -37,13 +45,14 @@ export interface SpeedResult {
   note?: string;
 }
 
-export function armorClass(character: Character): ArmorClassResult {
+export function armorClass(character: Character, locale: Locale = "en"): ArmorClassResult {
   const dex = abilityModifier(character.abilityScores.dexterity);
   const body = equippedItem(character, "armor");
   const offHand = equippedItem(character, "offHand");
   const warnings: string[] = [];
+  const dexName = locale === "sv" ? "Rörlighet" : "Dexterity";
   let total = 10 + dex;
-  let parts = ["10", `Dexterity ${formatModifier(dex)}`];
+  let parts = ["10", `${dexName} ${formatModifier(dex)}`];
   let wearingBodyArmor = false;
 
   if (body?.armor && body.armor.category !== "shield") {
@@ -51,14 +60,14 @@ export function armorClass(character: Character): ArmorClassResult {
     const profile = body.armor;
     if (profile.category === "light") {
       total = profile.baseAc + dex;
-      parts = [`${body.name} ${profile.baseAc}`, `Dexterity ${formatModifier(dex)}`];
+      parts = [`${body.name} ${profile.baseAc}`, `${dexName} ${formatModifier(dex)}`];
     } else if (profile.category === "medium") {
       const cap = profile.maxDexBonus ?? 2;
       const bonus = Math.min(dex, cap);
       total = profile.baseAc + bonus;
       parts = [
         `${body.name} ${profile.baseAc}`,
-        `Dexterity ${formatModifier(bonus)} (maximum ${formatModifier(cap)})`,
+        `${dexName} ${formatModifier(bonus)} (${locale === "sv" ? "högst" : "maximum"} ${formatModifier(cap)})`,
       ];
     } else {
       total = profile.baseAc;
@@ -66,30 +75,34 @@ export function armorClass(character: Character): ArmorClassResult {
     }
 
     if (!character.armorProficiencies.includes(profile.category)) {
-      warnings.push(untrainedArmorWarning(`${profile.category} armor`));
+      warnings.push(untrainedArmorWarning(armorTrainingName(locale, profile.category), locale));
     }
     if (profile.stealthDisadvantage) {
-      warnings.push("You have disadvantage on Dexterity (Stealth) checks.");
+      warnings.push(
+        locale === "sv"
+          ? "Du har nackdel på Rörlighet (Smyga)."
+          : "You have disadvantage on Dexterity (Stealth) checks.",
+      );
     }
   }
 
   if (offHand?.armor?.category === "shield") {
     total += offHand.armor.baseAc;
-    parts.push(`Shield +${offHand.armor.baseAc}`);
+    parts.push(`${locale === "sv" ? "Sköld" : "Shield"} +${offHand.armor.baseAc}`);
     if (!character.armorProficiencies.includes("shield")) {
-      warnings.push(untrainedArmorWarning("shields"));
+      warnings.push(untrainedArmorWarning(armorTrainingName(locale, "shield"), locale));
     }
   }
 
   if (character.fightingStyles.includes("defense") && wearingBodyArmor) {
     total += 1;
-    parts.push("Defense +1");
+    parts.push(locale === "sv" ? "Försvar +1" : "Defense +1");
   }
 
   return { total, parts, warnings };
 }
 
-export function speed(character: Character): SpeedResult {
+export function speed(character: Character, locale: Locale = "en"): SpeedResult {
   const armor = equippedItem(character, "armor")?.armor;
   const requirement = armor?.strengthRequirement;
   if (
@@ -99,7 +112,10 @@ export function speed(character: Character): SpeedResult {
   ) {
     return {
       feet: character.speed - 10,
-      note: `Your Strength is below ${requirement}, so this armor reduces your speed by 10 feet.`,
+      note:
+        locale === "sv"
+          ? `Din Styrka är under ${requirement}, så den här rustningen sänker din förflyttning med 10 fot.`
+          : `Your Strength is below ${requirement}, so this armor reduces your speed by 10 feet.`,
     };
   }
   return { feet: character.speed };
@@ -129,7 +145,7 @@ export function spellAttackBonus(character: Character): number | null {
   return proficiencyBonus(character.level) + modifier;
 }
 
-export function attackLines(character: Character): AttackLine[] {
+export function attackLines(character: Character, locale: Locale = "en"): AttackLine[] {
   const shieldEquipped =
     equippedItem(character, "offHand")?.armor?.category === "shield";
   const proficiency = proficiencyBonus(character.level);
@@ -144,6 +160,7 @@ export function attackLines(character: Character): AttackLine[] {
       attackLine(character, item.id, item.name, slot, item.weapon, {
         shieldEquipped,
         proficiency,
+        locale,
       }),
     );
   }
@@ -151,14 +168,20 @@ export function attackLines(character: Character): AttackLine[] {
   return lines;
 }
 
-export function combatNotes(character: Character): string[] {
+export function combatNotes(character: Character, locale: Locale = "en"): string[] {
   const notes: string[] = [];
   if (character.features.some((feature) => feature.id === "extra-attack")) {
-    notes.push("Extra Attack: the Attack action includes two weapon attacks.");
+    notes.push(
+      locale === "sv"
+        ? "Extra Attack: Attack-handlingen innehåller två vapenanfall."
+        : "Extra Attack: the Attack action includes two weapon attacks.",
+    );
   }
   if (character.features.some((feature) => feature.id === "colossus-slayer")) {
     notes.push(
-      "Colossus Slayer: once each turn, a hit against an already injured creature deals an extra 1d8.",
+      locale === "sv"
+        ? "Colossus Slayer: en gång per runda gör en träff mot en redan skadad varelse 1d8 extra."
+        : "Colossus Slayer: once each turn, a hit against an already injured creature deals an extra 1d8.",
     );
   }
   return notes;
@@ -170,18 +193,20 @@ function attackLine(
   name: string,
   slot: EquipmentSlotId,
   weapon: WeaponProfile,
-  context: { shieldEquipped: boolean; proficiency: number },
+  context: { shieldEquipped: boolean; proficiency: number; locale: Locale },
 ): AttackLine {
+  const locale = context.locale;
   const kind = weapon.properties.includes("ammunition") ? "ranged" : "melee";
   const ability = attackAbility(character, weapon, kind);
   const abilityMod = abilityModifier(character.abilityScores[ability]);
-  const notes = [`${ABILITY_SHORT[ability]} ${formatModifier(abilityMod)}.`];
+  const short = locale === "sv" ? abilityShort(locale, ability) : ABILITY_SHORT[ability];
+  const notes = [`${short} ${formatModifier(abilityMod)}.`];
   let attack = abilityMod;
 
   if (character.weaponProficiencies.includes(weapon.category)) {
     attack += context.proficiency;
   } else {
-    notes.push("Not proficient with this weapon.");
+    notes.push(locale === "sv" ? "Inte tränad med det här vapnet." : "Not proficient with this weapon.");
   }
 
   if (
@@ -190,20 +215,28 @@ function attackLine(
     character.fightingStyles.includes("archery")
   ) {
     attack += 2;
-    notes.push("Archery +2.");
+    notes.push(locale === "sv" ? "Bågskytte +2." : "Archery +2.");
   }
 
   if (weapon.properties.includes("ammunition") && weapon.range) {
-    notes.push(`Range ${weapon.range.normal}/${weapon.range.long} ft.`);
+    notes.push(
+      locale === "sv"
+        ? `Räckvidd ${weapon.range.normal}/${weapon.range.long} fot.`
+        : `Range ${weapon.range.normal}/${weapon.range.long} ft.`,
+    );
   }
   if (weapon.properties.includes("thrown") && weapon.range) {
-    notes.push(`Thrown ${weapon.range.normal}/${weapon.range.long} ft.`);
+    notes.push(
+      locale === "sv"
+        ? `Kast ${weapon.range.normal}/${weapon.range.long} fot.`
+        : `Thrown ${weapon.range.normal}/${weapon.range.long} ft.`,
+    );
   }
 
   let damageBonus = abilityMod;
   if (duelingApplies(character, slot, weapon, kind)) {
     damageBonus += 2;
-    notes.push("Dueling +2 damage.");
+    notes.push(locale === "sv" ? "Duellering +2 i skada." : "Dueling +2 damage.");
   }
 
   const blocked = context.shieldEquipped && weapon.properties.includes("two-handed");
@@ -213,9 +246,9 @@ function attackLine(
     slot,
     kind,
     attackBonus: attack,
-    damage: formatDamage(weapon.damageDice, damageBonus, weapon.damageType),
+    damage: formatDamage(weapon.damageDice, damageBonus, damageName(locale, weapon.damageType)),
     available: !blocked,
-    unavailableReason: blocked ? TWO_HANDED_SHIELD_REASON : undefined,
+    unavailableReason: blocked ? twoHandedShieldReason(locale) : undefined,
     notes,
   };
 }
@@ -252,6 +285,9 @@ function duelingApplies(
   return !equippedItem(character, otherSlot)?.weapon;
 }
 
-function untrainedArmorWarning(label: string): string {
+function untrainedArmorWarning(label: string, locale: Locale): string {
+  if (locale === "sv") {
+    return `Du saknar färdighet i ${label}. Du har nackdel på färdighetsslag, räddningsslag och anfallsslag som använder Styrka eller Rörlighet, och du kan inte kasta besvärjelser.`;
+  }
   return `You lack proficiency with ${label}. You have disadvantage on any ability check, saving throw, or attack roll that involves Strength or Dexterity, and you can't cast spells.`;
 }

@@ -1,6 +1,9 @@
-import { SLOT_LABELS } from "@/domain/catalog";
+"use client";
+
+import { slotName } from "@/domain/locale";
 import type { EquipmentSlotId, InventoryItem } from "@/domain/schema";
 import { SlotIcon } from "@/components/character/SlotIcon";
+import { useCopy, useLocale } from "@/components/providers/LocaleProvider";
 
 export function EquipmentSlotButton({
   slot,
@@ -13,8 +16,10 @@ export function EquipmentSlotButton({
   selected: boolean;
   onSelect: (slot: EquipmentSlotId) => void;
 }) {
-  const label = SLOT_LABELS[slot];
-  const worn = item?.name ?? "Empty";
+  const t = useCopy();
+  const locale = useLocale();
+  const label = slotName(locale, slot);
+  const worn = item?.name ?? t.gear.empty;
 
   return (
     <button

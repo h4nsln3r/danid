@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { RULESET_LABELS } from "@/domain/catalog";
+import { rulesetName } from "@/domain/locale";
 import type { Character, EquipmentSlotId } from "@/domain/schema";
 import { AbilityColumn } from "@/components/character/AbilityColumn";
 import { CombatPanel } from "@/components/character/CombatPanel";
@@ -14,6 +14,7 @@ import { PortraitMark } from "@/components/character/PortraitMark";
 import { RangerPortrait } from "@/components/character/RangerPortrait";
 import { SkillList } from "@/components/character/SkillList";
 import { SpellList } from "@/components/character/SpellList";
+import { useCopy, useLocale } from "@/components/providers/LocaleProvider";
 import {
   useCharacterLibrary,
   useLiveCharacter,
@@ -39,12 +40,14 @@ export function CharacterOverview({
   const character = useLiveCharacter(source, canEdit);
   const { equip, stow, restore } = useCharacterLibrary();
   const [selected, setSelected] = useState<EquipmentSlotId>("armor");
+  const t = useCopy();
+  const locale = useLocale();
 
   if (!character) {
     return (
       <section className="error-state" role="alert">
-        <h1>This character is missing</h1>
-        <p>There is no character with that id.</p>
+        <h1>{t.sheet.missingTitle}</h1>
+        <p>{t.sheet.missingText}</p>
       </section>
     );
   }
@@ -69,10 +72,10 @@ export function CharacterOverview({
             </div>
           )}
           <div>
-        <p className="eyebrow">{RULESET_LABELS[character.ruleset]}</p>
+        <p className="eyebrow">{rulesetName(locale, character.ruleset)}</p>
         <h1>{character.name}</h1>
         <p className="identity-line">
-          Level {character.level} {character.ancestry.toLowerCase()}{" "}
+          {t.home.level} {character.level} {character.ancestry.toLowerCase()}{" "}
           {character.className.toLowerCase()}
           {character.subclass ? ` (${character.subclass})` : ""}
         </p>
@@ -87,7 +90,7 @@ export function CharacterOverview({
             : ""}
         </p>
         {playedBy ? (
-          <p className="identity-meta">Played by {playedBy}</p>
+          <p className="identity-meta">{t.sheet.playedBy} {playedBy}</p>
         ) : null}
         {canEdit ? (
           <div className="button-row">
@@ -96,13 +99,12 @@ export function CharacterOverview({
               className="btn"
               onClick={() => restore(character.id)}
             >
-              {character.id === "mira-thorn" ? "Restore sample" : "Restore equipment"}
+              {character.id === "mira-thorn" ? t.sheet.restoreSample : t.sheet.restoreEquipment}
             </button>
           </div>
         ) : (
           <p className="fine-print">
-            You can look through this character. Only {playedBy ?? "their player"} can
-            change equipment or papers.
+            {t.sheet.lookOnly.replace("{name}", playedBy ?? t.sheet.theirPlayer)}
           </p>
         )}
           </div>
@@ -111,10 +113,8 @@ export function CharacterOverview({
 
       <div className="folio-grid">
         <div className="area-stage">
-          <section className="panel stage-panel" aria-label="Equipment slots">
-            <p className="fine-print">
-              Select a slot to inspect it. Tab and Enter reach every slot.
-            </p>
+          <section className="panel stage-panel" aria-label={t.sheet.slots}>
+            <p className="fine-print">{t.sheet.slotHint}</p>
             <EquipmentBoard
               character={character}
               selected={selected}
@@ -156,10 +156,10 @@ export function CharacterOverview({
         </div>
         <div className="area-bio">
           <section className="panel" aria-labelledby="bio-heading">
-            <h2 id="bio-heading">Notes</h2>
+            <h2 id="bio-heading">{t.sheet.notes}</h2>
             <p>{character.biography}</p>
             <details className="notes">
-              <summary>How this sheet was built</summary>
+              <summary>{t.sheet.howBuilt}</summary>
               <ul>
                 {character.buildNotes.map((note) => (
                   <li key={note}>{note}</li>

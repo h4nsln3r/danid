@@ -2,9 +2,10 @@
 
 import { useActionState, useRef, useState } from "react";
 import { createCharacter, readSheet, savePortrait } from "@/app/actions/sheets";
-import { ABILITY_LABELS, SKILL_CATALOG } from "@/domain/catalog";
+import { abilityName, skillName } from "@/domain/locale";
 import { SKILL_IDS } from "@/domain/schema";
 import type { SheetValues } from "@/domain/sheet";
+import { useCopy, useLocale } from "@/components/providers/LocaleProvider";
 
 const ABILITIES = [
   "strength",
@@ -50,6 +51,8 @@ async function prepareSheetImage(file: File): Promise<File> {
 }
 
 export function CreateCharacterForm({ playerName }: { playerName: string }) {
+  const t = useCopy();
+  const locale = useLocale();
   const readGeneration = useRef(0);
   const draftIdRef = useRef<string | null>(null);
   const chargeFrame = useRef(0);
@@ -93,7 +96,7 @@ export function CreateCharacterForm({ playerName }: { playerName: string }) {
       return;
     }
     cancelAnimationFrame(chargeFrame.current);
-    setCharge({ label: "Ready", progress: 100 });
+    setCharge({ label: t.create.ready, progress: 100 });
     await new Promise((resolve) => {
       setTimeout(resolve, 420);
     });
@@ -108,14 +111,14 @@ export function CreateCharacterForm({ playerName }: { playerName: string }) {
       return;
     }
     if (next.size > 20 * 1024 * 1024) {
-      setError("That picture is too large. Use one under 20 MB.");
+      setError(t.create.tooLarge);
       return;
     }
     const generation = readGeneration.current + 1;
     readGeneration.current = generation;
     setError(null);
     setReading(true);
-    beginCharge(kind === "sheet" ? "Reading the character sheet" : "Setting the portrait");
+    beginCharge(kind === "sheet" ? t.create.readingSheet : t.create.settingPortrait);
     void (async () => {
       const prepared = await prepareSheetImage(next);
       if (generation !== readGeneration.current) {
@@ -124,7 +127,7 @@ export function CreateCharacterForm({ playerName }: { playerName: string }) {
       if (prepared.size > 8 * 1024 * 1024) {
         setReading(false);
         setCharge(null);
-        setError("The picture can be at most 8 MB.");
+        setError(t.create.eightMb);
         return;
       }
       const body = new FormData();
@@ -180,11 +183,8 @@ export function CreateCharacterForm({ playerName }: { playerName: string }) {
     <div className="create-flow">
       <header className="identity">
         <p className="eyebrow">{playerName}</p>
-        <h1>New Character</h1>
-        <p className="lede">
-          Start with the character sheet or a portrait. The sheet is read and
-          the fields fill in. The portrait becomes the figure.
-        </p>
+        <h1>{t.create.title}</h1>
+        <p className="lede">{t.create.lede}</p>
       </header>
 
       {error || createState ? (
@@ -196,61 +196,56 @@ export function CreateCharacterForm({ playerName }: { playerName: string }) {
       <section className="panel intake">
         <div className="intake-grid">
           <article className="intake-card">
-            <h2>Character sheet</h2>
+            <h2>{t.create.sheet}</h2>
             {sheetPreview ? (
               // The preview is a local file the player just chose.
               // eslint-disable-next-line @next/next/no-img-element
-              <img className="sheet-preview" src={sheetPreview} alt="Preview of the character sheet" />
+              <img className="sheet-preview" src={sheetPreview} alt={t.create.sheetAlt} />
             ) : (
-              <p className="intake-empty">No sheet yet.</p>
+              <p className="intake-empty">{t.create.noSheet}</p>
             )}
             <div className="choice-row">
               <PictureChoice
-                label="Take a picture"
+                label={t.create.takePicture}
                 primary
                 capture
                 disabled={reading}
                 onFile={(file) => acceptImage("sheet", file)}
               />
               <PictureChoice
-                label="Upload"
+                label={t.create.upload}
                 disabled={reading}
                 onFile={(file) => acceptImage("sheet", file)}
               />
             </div>
-            <p className="fine-print">
-              The sheet is saved on this computer and sent to Gemini only when
-              you add it here.
-            </p>
+            <p className="fine-print">{t.create.sheetFine}</p>
           </article>
           <article className="intake-card">
-            <h2>Portrait</h2>
+            <h2>{t.create.portrait}</h2>
             <figure className="portrait-frame intake-portrait">
               {portraitPreview ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img className="portrait-photo" src={portraitPreview} alt="Portrait of the character" />
+                <img className="portrait-photo" src={portraitPreview} alt={t.create.portraitAlt} />
               ) : (
                 <div className="portrait-mark" aria-hidden="true">?</div>
               )}
-              <figcaption>The figure</figcaption>
+              <figcaption>{t.create.figure}</figcaption>
             </figure>
             <div className="choice-row">
               <PictureChoice
-                label="Take a picture"
+                label={t.create.takePicture}
                 primary
                 capture
                 disabled={reading}
                 onFile={(file) => acceptImage("portrait", file)}
               />
               <PictureChoice
-                label="Upload"
+                label={t.create.upload}
                 disabled={reading}
                 onFile={(file) => acceptImage("portrait", file)}
               />
             </div>
-            <p className="fine-print">
-              The portrait stays on this computer. It is not read for numbers.
-            </p>
+            <p className="fine-print">{t.create.portraitFine}</p>
           </article>
         </div>
         {charge ? (
@@ -274,7 +269,7 @@ export function CreateCharacterForm({ playerName }: { playerName: string }) {
       {draft ? (
         <div className="create-grid">
           <form key={draft.draftId} className="panel sheet-form" action={createAction}>
-            <h2>Check the values</h2>
+            <h2>{t.create.check}</h2>
             {draft.notes.length > 0 ? (
               <ul className="note-list">
                 {draft.notes.map((note) => (
@@ -286,17 +281,17 @@ export function CreateCharacterForm({ playerName }: { playerName: string }) {
             <input type="hidden" name="sheetArmorClass" value={draft.values.sheetArmorClass} />
 
             <div className="field-row">
-              <Field label="Character Name" name="name" defaultValue={draft.values.name} required />
-              <Field label="Race" name="ancestry" defaultValue={draft.values.ancestry} required />
-              <Field label="Class" name="className" defaultValue={draft.values.className} required />
-              <Field label="Archetype" name="subclass" defaultValue={draft.values.subclass} />
+              <Field label={t.create.name} name="name" defaultValue={draft.values.name} required />
+              <Field label={t.create.race} name="ancestry" defaultValue={draft.values.ancestry} required />
+              <Field label={t.create.class} name="className" defaultValue={draft.values.className} required />
+              <Field label={t.create.archetype} name="subclass" defaultValue={draft.values.subclass} />
             </div>
             <div className="field-row">
-              <Field label="Level" name="level" defaultValue={draft.values.level} inputMode="numeric" required />
-              <Field label="Background" name="background" defaultValue={draft.values.background} required />
-              <Field label="Alignment" name="alignment" defaultValue={draft.values.alignment} required />
+              <Field label={t.create.level} name="level" defaultValue={draft.values.level} inputMode="numeric" required />
+              <Field label={t.create.background} name="background" defaultValue={draft.values.background} required />
+              <Field label={t.create.alignment} name="alignment" defaultValue={draft.values.alignment} required />
               <Field
-                label="Experience Points"
+                label={t.create.xp}
                 name="experiencePoints"
                 defaultValue={draft.values.experiencePoints}
                 inputMode="numeric"
@@ -304,12 +299,12 @@ export function CreateCharacterForm({ playerName }: { playerName: string }) {
             </div>
 
             <fieldset className="field-set">
-              <legend>Ability Scores</legend>
+              <legend>{t.create.abilities}</legend>
               <div className="field-row">
                 {ABILITIES.map((name) => (
                   <Field
                     key={name}
-                    label={ABILITY_LABELS[name]}
+                    label={abilityName(locale, name)}
                     name={name}
                     defaultValue={draft.values[name]}
                     inputMode="numeric"
@@ -321,30 +316,30 @@ export function CreateCharacterForm({ playerName }: { playerName: string }) {
 
             <div className="field-row">
               <Field
-                label="Hit Point Maximum"
+                label={t.create.hpMax}
                 name="maxHitPoints"
                 defaultValue={draft.values.maxHitPoints}
                 inputMode="numeric"
                 required
               />
               <Field
-                label="Current Hit Points"
+                label={t.create.hpCurrent}
                 name="currentHitPoints"
                 defaultValue={draft.values.currentHitPoints}
                 inputMode="numeric"
                 required
               />
               <Field
-                label="Speed (ft.)"
+                label={t.create.speed}
                 name="speed"
                 defaultValue={draft.values.speed}
                 inputMode="numeric"
                 required
               />
               <label className="field">
-                <span>Hit Die</span>
+                <span>{t.create.hitDie}</span>
                 <select name="hitDie" defaultValue={draft.values.hitDie} required>
-                  <option value="">Choose</option>
+                  <option value="">{t.create.choose}</option>
                   {[4, 6, 8, 10, 12].map((die) => (
                     <option key={die} value={die}>
                       d{die}
@@ -354,25 +349,21 @@ export function CreateCharacterForm({ playerName }: { playerName: string }) {
               </label>
             </div>
 
-            <Field label="Languages" name="languages" defaultValue={draft.values.languages} required />
-            <p className="fine-print">Separate languages with commas.</p>
-            <Field label="Armor" name="armorName" defaultValue={draft.values.armorName} />
+            <Field label={t.create.languages} name="languages" defaultValue={draft.values.languages} required />
+            <p className="fine-print">{t.create.languagesHint}</p>
+            <Field label={t.create.armor} name="armorName" defaultValue={draft.values.armorName} />
             <label className="check-line">
               <input type="checkbox" name="shield" defaultChecked={draft.values.shield} />
-              Wielding a shield
+              {t.create.shield}
             </label>
             <label className="field">
-              <span>Weapons</span>
+              <span>{t.create.weapons}</span>
               <textarea name="weapons" rows={4} defaultValue={draft.values.weapons} />
             </label>
-            <p className="fine-print">
-              One weapon per line. Known weapons and armor from the 2014
-              Player&apos;s Handbook keep their book values. Unknown names are
-              saved with no invented damage.
-            </p>
+            <p className="fine-print">{t.create.weaponsHint}</p>
 
             <fieldset className="field-set">
-              <legend>Skills</legend>
+              <legend>{t.create.skills}</legend>
               <div className="skill-grid">
                 {SKILL_IDS.map((skill) => (
                   <label key={skill} className="check-line">
@@ -382,14 +373,14 @@ export function CreateCharacterForm({ playerName }: { playerName: string }) {
                       value={skill}
                       defaultChecked={draft.values.skills.includes(skill)}
                     />
-                    {SKILL_CATALOG[skill].label}
+                    {skillName(locale, skill)}
                   </label>
                 ))}
               </div>
             </fieldset>
 
             <button type="submit" className="btn btn-primary" disabled={saving}>
-              {saving ? "Creating…" : "Create Character"}
+              {saving ? t.create.creating : t.create.create}
             </button>
           </form>
         </div>

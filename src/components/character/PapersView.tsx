@@ -3,31 +3,14 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { confirmExtraPage, confirmFrontPage, showPortrait, uploadPortrait, uploadSheetPage } from "@/app/actions/papers";
-import { SKILL_CATALOG } from "@/domain/catalog";
+import { abilityName, skillName } from "@/domain/locale";
 import type { ExtraFinding, ExtraReading } from "@/domain/extra-page";
 import { SKILL_IDS } from "@/domain/schema";
-import { blankSheet, type SheetReading, type SheetValues } from "@/domain/sheet";
+import { blankSheet, type SheetReading } from "@/domain/sheet";
 import { useCharacterLibrary } from "@/components/providers/CharacterLibraryProvider";
+import { useCopy, useLocale } from "@/components/providers/LocaleProvider";
 
 const PAGES = [1, 2, 3, 4] as const;
-const PAGE_COPY: Record<(typeof PAGES)[number], { title: string; text: string }> = {
-  1: {
-    title: "Page 1 — character sheet",
-    text: "The front of the sheet. Replacing it reads the numbers again and keeps pages 2–4.",
-  },
-  2: {
-    title: "Page 2",
-    text: "Attacks, spells, features, and notes. Saving replaces what page 2 added before.",
-  },
-  3: {
-    title: "Page 3",
-    text: "Another page of the same kind. Saving replaces what page 3 added before.",
-  },
-  4: {
-    title: "Page 4",
-    text: "The last extra page. Saving replaces what page 4 added before.",
-  },
-};
 
 const MAX_EDGE = 1600;
 
@@ -74,6 +57,7 @@ export function PapersView({
 }) {
   const router = useRouter();
   const { adopt } = useCharacterLibrary();
+  const t = useCopy();
   const [files, setFiles] = useState(pages);
   const [gallery, setGallery] = useState(portraits);
   const [shown, setShown] = useState(activePortrait);
@@ -155,7 +139,7 @@ export function PapersView({
       return;
     }
     adopt(result.character);
-    setNotice("Page 1 is saved. Later pages are still on the character.");
+    setNotice(t.papers.savedPage1);
     router.refresh();
     await finish();
   }
@@ -208,7 +192,7 @@ export function PapersView({
     }
     setGallery(result.files);
     setShown(result.active);
-    setNotice(replace ? "That picture is replaced." : "The picture is saved.");
+    setNotice(replace ? t.papers.replaced : t.papers.pictureSaved);
     router.refresh();
     await finish();
   }
@@ -226,19 +210,15 @@ export function PapersView({
       return;
     }
     setShown(result.active);
-    setNotice("This picture is now the portrait on the character sheet.");
+    setNotice(t.papers.nowPortrait);
     router.refresh();
     await finish();
   }
 
   return (
     <section className="panel">
-      <h1>Papers and pictures</h1>
-      <p>
-        Four pages, one picture each. A new picture replaces that page. Page 1 is the character sheet.
-        Pages 2–4 can add attacks, spells, features, and notes after you confirm them. Unknown attacks
-        are kept without invented damage.
-      </p>
+      <h1>{t.papers.title}</h1>
+      <p>{t.papers.lede}</p>
       {error ? (
         <p className="notice notice-error" role="alert">
           {error}
@@ -248,7 +228,7 @@ export function PapersView({
       {busy ? (
         <div className="charge-meter" role="progressbar" aria-valuenow={Math.round(ready ? 100 : charge)} aria-valuemin={0} aria-valuemax={100}>
           <div className="charge-meter-fill" style={{ width: `${ready ? 100 : charge}%` }} />
-          <span className="charge-meter-label">{ready ? "Ready" : "Reading"}</span>
+          <span className="charge-meter-label">{ready ? t.papers.ready : t.papers.reading}</span>
         </div>
       ) : null}
 
@@ -258,8 +238,8 @@ export function PapersView({
           const extra = page === 1 ? null : extras[page];
           return (
             <article key={page} className="paper-card">
-              <h2>{PAGE_COPY[page].title}</h2>
-              <p>{PAGE_COPY[page].text}</p>
+              <h2>{page === 1 ? t.papers.page1Title : `${t.papers.pageTitle} ${page}`}</h2>
+              <p>{page === 1 ? t.papers.page1Text : t.papers.pageText}</p>
               {fileName ? (
                 <img
                   className="paper-shot"
@@ -267,17 +247,17 @@ export function PapersView({
                   src={`/characters/${characterId}/picture/${fileName}`}
                 />
               ) : (
-                <p>No picture yet.</p>
+                <p>{t.papers.noPicture}</p>
               )}
               <div className="button-row">
                 <PictureChoice
-                  label="Take a picture"
+                  label={t.papers.takePicture}
                   capture
                   disabled={busy !== null}
                   onFile={(file) => void sendPage(page, file)}
                 />
                 <PictureChoice
-                  label={fileName ? "Replace" : "Upload"}
+                  label={fileName ? t.papers.replace : t.papers.upload}
                   disabled={busy !== null}
                   onFile={(file) => void sendPage(page, file)}
                 />
@@ -303,10 +283,10 @@ export function PapersView({
         })}
       </div>
 
-      <h2>Pictures of the character</h2>
-      <p>One picture is shown on the sheet and in the company. You can keep up to eight and choose which one is shown.</p>
+      <h2>{t.papers.pictures}</h2>
+      <p>{t.papers.picturesLede}</p>
       <PictureChoice
-        label="Add a picture"
+        label={t.papers.addPicture}
         disabled={busy !== null || gallery.length >= 8}
         onFile={(file) => void sendPortrait(file)}
       />
@@ -314,7 +294,7 @@ export function PapersView({
         {gallery.map((fileName) => (
           <article key={fileName} className="portrait-tile">
             <img alt="" src={`/characters/${characterId}/picture/${fileName}`} />
-            <p>{fileName === shown ? "Shown on the character sheet." : "Saved, not shown."}</p>
+            <p>{fileName === shown ? t.papers.shown : t.papers.saved}</p>
             <div className="button-row">
               {fileName === shown ? null : (
                 <button type="button" className="btn" disabled={busy !== null} onClick={() => void choosePortrait(fileName)}>
@@ -322,7 +302,7 @@ export function PapersView({
                 </button>
               )}
               <PictureChoice
-                label="Replace"
+                label={t.papers.replace}
                 disabled={busy !== null}
                 onFile={(file) => void sendPortrait(file, fileName)}
               />
@@ -344,6 +324,8 @@ function FrontReview({
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }) {
   const values = reading.values ?? blankSheet();
+  const t = useCopy();
+  const locale = useLocale();
   return (
     <form className="sheet-form" onSubmit={onSubmit}>
       {reading.notes.length ? (
@@ -353,42 +335,42 @@ function FrontReview({
           ))}
         </ul>
       ) : null}
-      <Field label="Name" name="name" defaultValue={values.name} required />
-      <Field label="Ancestry" name="ancestry" defaultValue={values.ancestry} />
-      <Field label="Class" name="className" defaultValue={values.className} required />
-      <Field label="Subclass" name="subclass" defaultValue={values.subclass} />
-      <Field label="Level" name="level" defaultValue={values.level} required />
-      <Field label="Background" name="background" defaultValue={values.background} />
-      <Field label="Alignment" name="alignment" defaultValue={values.alignment} />
-      <Field label="Experience" name="experiencePoints" defaultValue={values.experiencePoints} />
+      <Field label={t.create.name} name="name" defaultValue={values.name} required />
+      <Field label={t.papers.ancestry} name="ancestry" defaultValue={values.ancestry} />
+      <Field label={t.create.class} name="className" defaultValue={values.className} required />
+      <Field label={t.create.archetype} name="subclass" defaultValue={values.subclass} />
+      <Field label={t.create.level} name="level" defaultValue={values.level} required />
+      <Field label={t.create.background} name="background" defaultValue={values.background} />
+      <Field label={t.create.alignment} name="alignment" defaultValue={values.alignment} />
+      <Field label={t.papers.experience} name="experiencePoints" defaultValue={values.experiencePoints} />
       {(["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"] as const).map((ability) => (
-        <Field key={ability} label={ability} name={ability} defaultValue={values[ability]} required />
+        <Field key={ability} label={abilityName(locale, ability)} name={ability} defaultValue={values[ability]} required />
       ))}
-      <Field label="Hit point maximum" name="maxHitPoints" defaultValue={values.maxHitPoints} required />
-      <Field label="Current hit points" name="currentHitPoints" defaultValue={values.currentHitPoints} required />
-      <Field label="Speed" name="speed" defaultValue={values.speed} required />
-      <Field label="Hit die" name="hitDie" defaultValue={values.hitDie} />
-      <Field label="Languages" name="languages" defaultValue={values.languages} />
-      <Field label="Armor" name="armorName" defaultValue={values.armorName} />
+      <Field label={t.create.hpMax} name="maxHitPoints" defaultValue={values.maxHitPoints} required />
+      <Field label={t.create.hpCurrent} name="currentHitPoints" defaultValue={values.currentHitPoints} required />
+      <Field label={t.create.speed} name="speed" defaultValue={values.speed} required />
+      <Field label={t.create.hitDie} name="hitDie" defaultValue={values.hitDie} />
+      <Field label={t.create.languages} name="languages" defaultValue={values.languages} />
+      <Field label={t.create.armor} name="armorName" defaultValue={values.armorName} />
       <label>
-        <input type="checkbox" name="shield" defaultChecked={values.shield} /> Shield
+        <input type="checkbox" name="shield" defaultChecked={values.shield} /> {t.papers.shield}
       </label>
       <label>
-        Weapons, one per line
+        {t.papers.weapons}
         <textarea name="weapons" defaultValue={values.weapons} rows={4} />
       </label>
-      <Field label="Armor class on the sheet" name="sheetArmorClass" defaultValue={values.sheetArmorClass} />
+      <Field label={t.papers.sheetAc} name="sheetArmorClass" defaultValue={values.sheetArmorClass} />
       <fieldset>
-        <legend>Skills</legend>
+        <legend>{t.create.skills}</legend>
         {SKILL_IDS.map((skill) => (
           <label key={skill}>
             <input type="checkbox" name="skills" value={skill} defaultChecked={values.skills.includes(skill)} />{" "}
-            {SKILL_CATALOG[skill].label}
+            {skillName(locale, skill)}
           </label>
         ))}
       </fieldset>
       <button type="submit" className="btn btn-primary" disabled={disabled}>
-        Save page 1
+        {t.papers.savePage1}
       </button>
     </form>
   );
@@ -407,6 +389,7 @@ function ExtraReview({
   onToggle: (index: number) => void;
   onSave: () => void;
 }) {
+  const t = useCopy();
   return (
     <div>
       {reading.notes.length ? (
@@ -423,7 +406,7 @@ function ExtraReview({
               <label>
                 <input type="checkbox" checked={flags[index] ?? false} onChange={() => onToggle(index)} />
                 <span>
-                  <strong>{labelFor(finding)}</strong>
+                  <strong>{labelFor(finding, t)}</strong>
                   {finding.detail ? ` — ${finding.detail}` : ""}
                 </span>
               </label>
@@ -431,26 +414,26 @@ function ExtraReview({
           ))}
         </ul>
       ) : (
-        <p>Nothing readable was found on this page.</p>
+        <p>{t.papers.nothingFound}</p>
       )}
       <button type="button" className="btn btn-primary" disabled={disabled} onClick={onSave}>
-        Save this page
+        {t.papers.savePage}
       </button>
     </div>
   );
 }
 
-function labelFor(finding: ExtraFinding): string {
+function labelFor(finding: ExtraFinding, t: ReturnType<typeof useCopy>): string {
   if (finding.kind === "attack") {
-    return `Attack: ${finding.name}`;
+    return `${t.papers.attack}: ${finding.name}`;
   }
   if (finding.kind === "spell") {
-    return `Spell: ${finding.name}`;
+    return `${t.papers.spell}: ${finding.name}`;
   }
   if (finding.kind === "feature") {
-    return `Feature: ${finding.name}`;
+    return `${t.papers.feature}: ${finding.name}`;
   }
-  return `Note: ${finding.name}`;
+  return `${t.papers.note}: ${finding.name}`;
 }
 
 function Field({

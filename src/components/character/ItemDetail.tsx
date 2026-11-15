@@ -1,7 +1,10 @@
-import { SLOT_LABELS, SOURCE_LABELS } from "@/domain/catalog";
+"use client";
+
+import { slotName, sourceName, armorTrainingName } from "@/domain/locale";
 import { formatWeight, itemWeightLb, weaponDetailLines } from "@/domain/format";
 import type { Character, EquipmentSlotId } from "@/domain/schema";
 import { equippedItem, itemsForSlot, slotOfItem } from "@/domain/rules/equipment";
+import { useCopy, useLocale } from "@/components/providers/LocaleProvider";
 
 export function ItemDetail({
   character,
@@ -16,9 +19,11 @@ export function ItemDetail({
   onEquip: (itemId: string, slot: EquipmentSlotId) => void;
   onStow: (slot: EquipmentSlotId) => void;
 }) {
+  const t = useCopy();
+  const locale = useLocale();
   const item = equippedItem(character, slot);
   const alternatives = itemsForSlot(character, slot);
-  const label = SLOT_LABELS[slot];
+  const label = slotName(locale, slot);
 
   return (
     <section
@@ -28,29 +33,29 @@ export function ItemDetail({
     >
       <h2 id="detail-heading">
         {label}
-        <span className="feature-source">{item ? item.name : "Empty"}</span>
+        <span className="feature-source">{item ? item.name : t.gear.empty}</span>
       </h2>
       {item ? (
         <ItemBody itemId={item.id} character={character} />
       ) : (
-        <p>Nothing is worn here.</p>
+        <p>{t.gear.nothingHere}</p>
       )}
       {item && canEdit ? (
         <div className="button-row">
           <button type="button" className="btn" onClick={() => onStow(slot)}>
-            Stow {item.name}
+            {t.gear.stow} {item.name}
           </button>
         </div>
       ) : null}
       {alternatives.length > 0 ? (
         <div className="alternative-list">
-          <h3>Other items for this slot</h3>
+          <h3>{t.gear.otherItems}</h3>
           <ul>
             {alternatives.map((candidate) => {
               const wornAt = slotOfItem(character, candidate.id);
               const action = wornAt
-                ? `Move ${candidate.name} here`
-                : `Equip ${candidate.name}`;
+                ? `${t.gear.moveHere} ${candidate.name} ${t.gear.here}`
+                : `${t.gear.equip} ${candidate.name}`;
               return (
                 <li key={candidate.id}>
                   <span>{candidate.name}</span>
@@ -69,11 +74,11 @@ export function ItemDetail({
           </ul>
         </div>
       ) : (
-        <p className="fine-print">No carried item fits this slot.</p>
+        <p className="fine-print">{t.gear.noFit}</p>
       )}
       {canEdit ? null : (
         <p className="fine-print">
-          Only the player who created this character can change equipment.
+          {t.library.onlyOwner}
         </p>
       )}
     </section>
@@ -87,9 +92,11 @@ function ItemBody({
   itemId: string;
   character: Character;
 }) {
+  const t = useCopy();
+  const locale = useLocale();
   const item = character.items.find((entry) => entry.id === itemId);
   if (!item) {
-    return <p>That item is missing from this character.</p>;
+    return <p>{t.gear.missingItem}</p>;
   }
   const weight = itemWeightLb(item);
 
@@ -97,13 +104,13 @@ function ItemBody({
     <>
       <p>{item.description}</p>
       <ul className="meta-list">
-        <li>{SOURCE_LABELS[item.source]}</li>
-        {weight === undefined ? <li>Weight unlisted</li> : <li>{formatWeight(weight)}</li>}
-        {item.quantity > 1 ? <li>Quantity {item.quantity}</li> : null}
+        <li>{sourceName(locale, item.source)}</li>
+        {weight === undefined ? <li>{t.gear.weightUnlisted}</li> : <li>{formatWeight(weight)}</li>}
+        {item.quantity > 1 ? <li>{t.gear.quantity} {item.quantity}</li> : null}
       </ul>
       {item.weapon ? (
         <ul className="meta-list">
-          {weaponDetailLines(item.weapon).map((line) => (
+          {weaponDetailLines(item.weapon, locale).map((line) => (
             <li key={line}>{line}</li>
           ))}
         </ul>
@@ -111,8 +118,8 @@ function ItemBody({
       {item.armor ? (
         <p className="fine-print">
           {item.armor.category === "shield"
-            ? `Shield, +${item.armor.baseAc} armor class.`
-            : `${item.armor.category} armor, base armor class ${item.armor.baseAc}.`}
+            ? `${locale === "sv" ? "Sköld" : "Shield"}, +${item.armor.baseAc} ${locale === "sv" ? "rustningsklass" : "armor class"}.`
+            : `${armorTrainingName(locale, item.armor.category)}, ${locale === "sv" ? "grundvärde" : "base armor class"} ${item.armor.baseAc}.`}
         </p>
       ) : null}
     </>
